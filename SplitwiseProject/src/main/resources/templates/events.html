@@ -1,8 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Home Page</title>
@@ -15,7 +12,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" th:href="@{/profile}">Home Page</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -23,14 +21,11 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
                 </li>
-            </ul>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
                 </li>
             </ul>
         </div>
-
     </div>
 </nav>
 <div class="container">
@@ -41,20 +36,17 @@
         <thead class="table-dark">
         <tr>
             <th>Events</th>
-
-
         </tr>
         </thead>
 
-        <a th:href="@{/addEvent}" class="btn btn-primary">Add Event</a>
-
         <tbody>
-        <tr th:each = "events : ${events}">
-            <td th:text = "${events.eventName}"></td>
-
+        <tr th:each="events : ${events}">
+            <td th:text="${events.eventName}"></td>
         </tr>
         </tbody>
     </table>
+    <br>
+    <a th:href="@{/addEvent}" class="btn btn-primary">Add Event</a>
 </div>
 </body>
 </html>

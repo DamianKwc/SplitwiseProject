@@ -1,7 +1,7 @@
 package com.splitwiseapp.service.users;
 
 import com.splitwiseapp.entity.UserEntity;
-import com.splitwiseapp.dto.userDto.UserDto;
+import com.splitwiseapp.dto.users.UserDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

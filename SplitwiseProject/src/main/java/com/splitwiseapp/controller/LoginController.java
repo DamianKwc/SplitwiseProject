@@ -2,7 +2,7 @@ package com.splitwiseapp.controller;
 
 import com.splitwiseapp.entity.UserEntity;
 import com.splitwiseapp.service.users.UserService;
-import com.splitwiseapp.dto.userDto.UserDto;
+import com.splitwiseapp.dto.users.UserDto;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

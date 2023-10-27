@@ -1,17 +1,16 @@
 package com.splitwiseapp.service.events;
 
-import com.splitwiseapp.dto.eventsDto.EventsDto;
+import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.entity.EventsEntity;
-import com.splitwiseapp.entity.UserEntity;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 @Service
 public interface EventsService {
-    List<EventsDto> findAllEvents();
+    List<EventDto> findAllEvents();
 
-    void saveEvent(EventsDto eventsDto);
+    void saveEvent(EventDto eventDto);
 
     EventsEntity findByEventName(@NotEmpty String eventName);
 }

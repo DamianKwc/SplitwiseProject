@@ -1,33 +1,27 @@
 package com.splitwiseapp.service.users;
 
-import com.splitwiseapp.entity.UserEntity;
-import com.splitwiseapp.repository.UserRepository;
+import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.RoleEntity;
+import com.splitwiseapp.entity.UserEntity;
 import com.splitwiseapp.repository.RoleRepository;
-import com.splitwiseapp.dto.userDto.UserDto;
+import com.splitwiseapp.repository.UserRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository,
-                           RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
     private RoleEntity checkRoleExist(){
         RoleEntity role = new RoleEntity();
         role.setRole("ROLE_ADMIN");
@@ -46,7 +40,7 @@ public class UserServiceImpl implements UserService {
         if(role == null){
             role = checkRoleExist();
         }
-        user.setRoles(Arrays.asList(role));
+        user.setRoles(List.of(role));
         userRepository.save(user);
     }
 

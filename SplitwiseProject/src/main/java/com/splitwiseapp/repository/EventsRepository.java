@@ -5,7 +5,5 @@ import com.splitwiseapp.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EventsRepository extends JpaRepository<EventsEntity, Integer> {
-
     EventsEntity findByEventName(String eventName);
-
 }

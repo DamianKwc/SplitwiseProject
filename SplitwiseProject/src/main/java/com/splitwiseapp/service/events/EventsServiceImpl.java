@@ -1,6 +1,6 @@
 package com.splitwiseapp.service.events;
 
-import com.splitwiseapp.dto.eventsDto.EventsDto;
+import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.entity.EventsEntity;
 
 import com.splitwiseapp.entity.UserEntity;
@@ -28,7 +28,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public List<EventsDto> findAllEvents() {
+    public List<EventDto> findAllEvents() {
         List<EventsEntity> events = eventsRepository.findAll();
         return events.stream()
                 .map((event) -> mapToEventsDto(event))
@@ -36,24 +36,24 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public void saveEvent(EventsDto eventsDto) {
+    public void saveEvent(EventDto eventDto) {
         EventsEntity event = new EventsEntity();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserEntity loggedInUser = userRepository.findByUsername(username);
 
-        event.setEventName(eventsDto.getEventName());
+        event.setEventName(eventDto.getEventName());
         event.setOwner(loggedInUser);
 
         eventsRepository.save(event);
     }
 
-    private EventsDto mapToEventsDto(EventsEntity event){
-        EventsDto eventsDto = new EventsDto();
-        eventsDto.setEventName(event.getEventName());
+    private EventDto mapToEventsDto(EventsEntity event){
+        EventDto eventDto = new EventDto();
+        eventDto.setEventName(event.getEventName());
 
-        return eventsDto;
+        return eventDto;
     }
 
 

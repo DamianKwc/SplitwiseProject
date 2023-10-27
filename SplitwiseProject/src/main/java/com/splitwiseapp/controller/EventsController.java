@@ -1,13 +1,13 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.dto.eventsDto.EventsDto;
+import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.entity.EventsEntity;
 import com.splitwiseapp.entity.UserEntity;
 import com.splitwiseapp.repository.EventsRepository;
 import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventsService;
 import com.splitwiseapp.service.users.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.List;
 
 @Controller
+@AllArgsConstructor
 public class EventsController {
 
     //zrobić dodawanie użytkowników
@@ -28,31 +29,22 @@ public class EventsController {
     private final UserRepository userRepository;
     private final UserService userService;
 
-    @Autowired
-    public EventsController(EventsService eventsService, EventsRepository eventsRepository, UserRepository userRepository, UserService userService) {
-        this.eventsService = eventsService;
-        this.eventsRepository = eventsRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
-    }
-
     @GetMapping("/addEvent")
     public String showEventAddingForm(Model model){
-
-        EventsDto events = new EventsDto();
+        EventDto events = new EventDto();
         model.addAttribute("events", events);
         return "addEvent";
     }
 
     @GetMapping("/events")
     public String events(Model model) {
-        List<EventsDto> events = eventsService.findAllEvents();
+        List<EventDto> events = eventsService.findAllEvents();
         model.addAttribute("events", events);
         return "events";
     }
 
     @PostMapping("/addEvent")
-    public String addEvent(@ModelAttribute("events") EventsDto eventsDto,
+    public String addEvent(@ModelAttribute("events") EventDto eventDto,
                            BindingResult result,
                            Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -61,20 +53,20 @@ public class EventsController {
         UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
 
         EventsEntity eventEntity = new EventsEntity();
-        eventEntity.setEventName(eventsDto.getEventName());
+        eventEntity.setEventName(eventDto.getEventName());
         eventEntity.setOwner(loggedInUser);
 
-        EventsEntity existingEvent = eventsService.findByEventName(eventsDto.getEventName());
+        EventsEntity existingEvent = eventsService.findByEventName(eventDto.getEventName());
 
         if (existingEvent != null && existingEvent.getEventName() != null && existingEvent.getEventName().isEmpty()) {
             result.rejectValue("eventName", null,
                     "Event with that name already exists");
         }
         if (result.hasErrors()) {
-            model.addAttribute("events", eventsDto);
+            model.addAttribute("events", eventDto);
             return "events";
         }
-        eventsService.saveEvent(eventsDto);
+        eventsService.saveEvent(eventDto);
         return "events";
     }
 }
