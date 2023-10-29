@@ -14,7 +14,7 @@ public class BillEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_bill")
-    private int idBill;
+    private int id;
 
     @Column(name = "amount")
     private double amount;
@@ -27,11 +27,4 @@ public class BillEntity {
 
     @Column(name = "id_event")
     private int idEvent;
-
-    @Column(name = "id_members")
-    private String idMembers;
-
-
-
-
 }

@@ -1,10 +1,14 @@
 package com.splitwiseapp.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -17,7 +21,7 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
-    private int idUser;
+    private int id;
 
     @Column(name = "first_name")
     private String firstName;
@@ -37,17 +41,7 @@ public class UserEntity {
     @OneToMany(mappedBy = "owner",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
-    private List<EventsEntity> events;
-
-    @ManyToMany(fetch = FetchType.LAZY,
-                        cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-                        CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinTable(
-            name = "event_members",
-            joinColumns = @JoinColumn(name = "id_user"),
-            inverseJoinColumns = @JoinColumn(name = "id_event")
-    )
-    private List<EventsEntity> members;
+    private Set<EventEntity> myEvents;
 
 }
 
