@@ -1,6 +1,6 @@
 package com.splitwiseapp.service.bills;
 
-import com.splitwiseapp.entity.BillEntity;
+import com.splitwiseapp.entity.Bill;
 import com.splitwiseapp.repository.BillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public List<BillEntity> findAll() {
+    public List<Bill> findAll() {
         return billRepository.findAll();
     }
 }

@@ -1,5 +1,6 @@
 package com.splitwiseapp.dto.events;
 
+import com.splitwiseapp.entity.User;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
@@ -12,4 +13,7 @@ public class EventDto {
 
     @NotEmpty
     private String eventName;
+
+    @NotEmpty
+    private User participant;
 }

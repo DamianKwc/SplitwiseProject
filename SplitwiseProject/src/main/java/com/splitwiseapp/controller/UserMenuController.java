@@ -1,6 +1,6 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.entity.UserEntity;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class UserMenuController {
     public String userProfile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        UserEntity loggedInUser = userRepository.findByUsername(username);
+        User loggedInUser = userRepository.findByUsername(username);
         model.addAttribute("user", loggedInUser);
         return "profile";
     }

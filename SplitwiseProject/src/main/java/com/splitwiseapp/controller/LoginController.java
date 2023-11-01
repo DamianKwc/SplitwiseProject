@@ -1,6 +1,6 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.entity.UserEntity;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.users.UserService;
 import com.splitwiseapp.dto.users.UserDto;
 import jakarta.validation.Valid;
@@ -45,7 +45,7 @@ public class LoginController {
     public String registration(@Valid @ModelAttribute("user") UserDto userDto,
                                BindingResult result,
                                Model model){
-        UserEntity existingUser = userService.findByUsername(userDto.getUsername());
+        User existingUser = userService.findByUsername(userDto.getUsername());
 
         if(existingUser != null && existingUser.getUsername() != null && !existingUser.getUsername().isEmpty()){
             result.rejectValue("username", null,

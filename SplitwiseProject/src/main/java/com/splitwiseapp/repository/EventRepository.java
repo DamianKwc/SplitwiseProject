@@ -1,8 +1,8 @@
 package com.splitwiseapp.repository;
 
-import com.splitwiseapp.entity.EventEntity;
+import com.splitwiseapp.entity.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface EventRepository extends JpaRepository<EventEntity, Integer> {
-    EventEntity findByEventName(String eventName);
+public interface EventRepository extends JpaRepository<Event, Integer> {
+    Event findByEventName(String eventName);
 }
