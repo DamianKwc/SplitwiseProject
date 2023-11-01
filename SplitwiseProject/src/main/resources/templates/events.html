@@ -35,13 +35,15 @@
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
         <tr>
-            <th>Events</th>
+            <th>Event</th>
+            <th>Event action</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr th:each="events : ${events}">
-            <td th:text="${events.eventName}"></td>
+        <tr th:each="event : ${events}">
+            <td th:text="${event.eventName}"></td>
+            <td><a class="btn btn-sm btn-success" th:href="@{${event.id} + '/users/' + 2}">Edit</a></td>
         </tr>
         </tbody>
     </table>

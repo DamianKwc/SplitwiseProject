@@ -1,8 +1,8 @@
 package com.splitwiseapp.dto.users;
 
-import com.splitwiseapp.entity.UserEntity;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.UserRepository;
-import com.splitwiseapp.entity.RoleEntity;
+import com.splitwiseapp.entity.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,7 +22,7 @@ public class CustomUserDetails implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
 
         if (user != null) {
             return new org.springframework.security.core.userdetails.User(user.getUsername(),
@@ -33,7 +33,7 @@ public class CustomUserDetails implements UserDetailsService {
         }
     }
 
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<RoleEntity> roles) {
+    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getRole()))
                 .collect(Collectors.toList());
