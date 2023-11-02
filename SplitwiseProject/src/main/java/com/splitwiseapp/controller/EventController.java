@@ -27,7 +27,6 @@ import static com.splitwiseapp.shared.UserUtils.getCurrentlyLoggedInUser;
 @AllArgsConstructor
 public class EventController {
 
-    //zrobić dodawanie użytkowników
     private final EventService eventService;
     private final EventRepository eventRepository;
     private final UserService userService;
