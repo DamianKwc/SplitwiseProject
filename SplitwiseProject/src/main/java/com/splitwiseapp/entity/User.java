@@ -39,7 +39,8 @@ public class User {
     private List<Role> roles = new ArrayList<>();
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "eventUsers", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "eventUsers", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH})
     @Builder.Default
     private Set<Event> userEvents = new HashSet<>();
 

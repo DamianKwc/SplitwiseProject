@@ -11,7 +11,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/profile}">Home Page</a>
+        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -43,8 +43,16 @@
         <tbody>
         <tr th:each="event : ${events}">
             <td th:text="${event.eventName}"></td>
-            <td><a class="btn btn-sm btn-success" th:href="@{${event.id} + '/users/' + 2}">Edit</a></td>
+            <td>
+                <a class="btn btn-sm btn-success" th:href="@{${event.id} + '/users/' + 2}">Edit</a>
+
+                <a th:href="@{/delete(eventId=${event.id})}"
+                   class="btn btn-danger btn-sm"
+                   onclick="if (!(confirm('Are you sure ?'))) return false"
+                >Delete</a>
+            </td>
         </tr>
+
         </tbody>
     </table>
     <br>

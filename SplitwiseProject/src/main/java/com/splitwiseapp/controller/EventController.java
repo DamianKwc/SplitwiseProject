@@ -13,10 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
@@ -38,6 +35,12 @@ public class EventController {
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
         return "new-event";
+    }
+
+    @GetMapping("/delete")
+    public String deleteEvent(@RequestParam("eventId") Integer eventId) {
+        eventService.deleteById(eventId);
+        return "redirect:/events";
     }
 
     @GetMapping("/events")

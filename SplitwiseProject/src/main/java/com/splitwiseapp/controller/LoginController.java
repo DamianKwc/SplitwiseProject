@@ -27,6 +27,11 @@ public class LoginController {
         return "index";
     }
 
+    @GetMapping("/")
+    public String redirectToLoginPage() {
+        return "redirect:/login";
+    }
+
     // handler method to handle login request
     @GetMapping("/login")
     public String login(){
