@@ -15,4 +15,6 @@ public interface EventService {
     Event findByEventName(@NotEmpty String eventName);
 
     void deleteById(Integer eventId);
+
+    Event save(Event event);
 }

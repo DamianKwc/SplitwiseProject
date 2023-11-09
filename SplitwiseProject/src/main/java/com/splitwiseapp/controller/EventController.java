@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,28 +75,48 @@ public class EventController {
         return "redirect:/events";
     }
 
-    @GetMapping("/event/edit/{id}")
-    public String editEvent(@PathVariable Integer id, Model model) {
-        Event eventToBeEdited = eventService.findById(id);
-        if (eventToBeEdited != null) {
-            model.addAttribute("newEvent", eventToBeEdited);
-        }
-        return "new-event";
-    }
+   @GetMapping("/events/{id}/users")
+   public String viewUsers(@PathVariable("id") Integer id, Model model)
+   {
+       Event event = eventService.findById(id);
+       List<User> users = event.getEventUsers();
 
-    @GetMapping("/{eventId}/users/{userId}")
-    public String enrollUserToEvent(@PathVariable Integer eventId, @PathVariable Integer userId, Model model) {
-        Event event = eventService.findById(eventId);
-        Set<User> eventUsers = event.getEventUsers();
-        User user = userService.findById(userId);
+       if(users.isEmpty()) {
+           return "redirect:/events/" + id + "/addUsers";
+       }
 
-        if (event != null && user != null) {
-            model.addAttribute("newEvent", event);
-            model.addAttribute("eventUsers", eventUsers);
-            event.enrollUser(user);
-            eventRepository.save(event);
-        }
-        return "new-event";
+       model.addAttribute("users", users);
+       return "users";
+
+   }
+
+   @GetMapping("/events/{id}/addUsers")
+   public String addUsers(@PathVariable("id") Integer id, Model model)
+   {
+       List<User> eventUsers = eventService.findById(id).getEventUsers();
+       List<User> users = userService.findAll();
+       List<User> remainingUsers = new ArrayList<User>();
+       for (User u: users)
+       {
+           if (!eventUsers.contains(u)) {
+               remainingUsers.add(u);
+           }
+       }
+       model.addAttribute("users",remainingUsers);
+       model.addAttribute("add_id", id);
+       return "users";
+   }
+
+    @GetMapping("/events/{eid}/addUser")
+    public String addUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid)
+    {
+        Event event = eventService.findById(eid);
+        User user = userService.findById(uid);
+        event.addUser(user);
+        eventService.save(event);
+        user.addEvent(event);
+        userService.save(user);
+        return "redirect:/events/" + eid + "/users";
     }
 
     private boolean doesEventWithGivenNameAlreadyExist(EventDto eventDto) {

@@ -35,21 +35,30 @@
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
         <tr>
+            <th>ID</th>
             <th>Event</th>
             <th>Event action</th>
+            <th>Users</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr th:each="event : ${events}">
-            <td th:text="${event.eventName}"></td>
+        <tr th:each="temp : ${events}">
+            <td th:text="${temp.id}"></td>
+            <td th:text="${temp.eventName}"></td>
             <td>
-                <a class="btn btn-sm btn-success" th:href="@{${event.id} + '/users/' + 2}">Edit</a>
-
-                <a th:href="@{/delete(eventId=${event.id})}"
+                <a class="btn btn-sm btn-success" th:href="@{${temp.id} + '/users/' + 2}">Edit</a>
+                <a th:href="@{/delete(eventId=${temp.id})}"
                    class="btn btn-danger btn-sm"
-                   onclick="if (!(confirm('Are you sure ?'))) return false"
-                >Delete</a>
+                   onclick="if (!(confirm('Are you sure ?'))) return false">Delete</a>
+            </td>
+            <td>
+                <a th:href="@{'/events/'+${temp.id}+'/users'}">
+                    <p th:if="#{not #lists.isEmpty(temp.eventUsers)}">View Users</p>
+                </a>
+            </td>
+        </tr>
+
             </td>
         </tr>
 

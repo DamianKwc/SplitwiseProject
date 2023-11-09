@@ -42,7 +42,11 @@ public class User {
     @ManyToMany(mappedBy = "eventUsers", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
     @Builder.Default
-    private Set<Event> userEvents = new HashSet<>();
+    private List<Event> userEvents = new ArrayList<>();
+
+    public void addEvent(Event event) {
+        this.userEvents.add(event);
+    }
 
 }
 

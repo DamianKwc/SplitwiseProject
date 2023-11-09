@@ -3,7 +3,9 @@ package com.splitwiseapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -37,9 +39,13 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private Set<User> eventUsers = new HashSet<>();
+    private List<User> eventUsers = new ArrayList<>();
 
     public void enrollUser(User user) {
         eventUsers.add(user);
+    }
+
+    public void addUser (User user) {
+        this.eventUsers.add(user);
     }
 }
