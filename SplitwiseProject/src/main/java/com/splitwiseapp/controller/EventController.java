@@ -30,25 +30,19 @@ public class EventController {
     private final UserService userService;
     private final UserRepository userRepository;
 
+    @GetMapping("/events")
+    public String events(Model model) {
+        List<Event> events = eventService.findAllEvents();
+        model.addAttribute("events", events);
+        return "events";
+    }
+
     @GetMapping("/newEvent")
     public String showEventAddingForm(Model model){
         List<UserDto> allUsers = userService.findAllUsers();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
         return "new-event";
-    }
-
-    @GetMapping("/delete")
-    public String deleteEvent(@RequestParam("eventId") Integer eventId) {
-        eventService.deleteById(eventId);
-        return "redirect:/events";
-    }
-
-    @GetMapping("/events")
-    public String events(Model model) {
-        List<Event> events = eventService.findAllEvents();
-        model.addAttribute("events", events);
-        return "events";
     }
 
     @PostMapping("/saveEvent")
@@ -70,14 +64,21 @@ public class EventController {
                 .owner(getCurrentlyLoggedInUser(userRepository))
                 .build();
 
-        event.enrollUser(event.getOwner());
+        event.addUser(getCurrentlyLoggedInUser(userRepository));
+        event.setOwner(getCurrentlyLoggedInUser(userRepository));
         eventService.saveEvent(event);
+
+        return "redirect:/events";
+    }
+
+    @GetMapping("/delete")
+    public String deleteEvent(@RequestParam("eventId") Integer eventId) {
+        eventService.deleteById(eventId);
         return "redirect:/events";
     }
 
    @GetMapping("/events/{id}/users")
-   public String viewUsers(@PathVariable("id") Integer id, Model model)
-   {
+   public String viewUsers(@PathVariable("id") Integer id, Model model) {
        Event event = eventService.findById(id);
        List<User> users = event.getEventUsers();
 
@@ -85,14 +86,14 @@ public class EventController {
            return "redirect:/events/" + id + "/addUsers";
        }
 
+       model.addAttribute("remove_id", id);
        model.addAttribute("users", users);
        return "users";
 
    }
 
    @GetMapping("/events/{id}/addUsers")
-   public String addUsers(@PathVariable("id") Integer id, Model model)
-   {
+   public String addUsers(@PathVariable("id") Integer id, Model model) {
        List<User> eventUsers = eventService.findById(id).getEventUsers();
        List<User> users = userService.findAll();
        List<User> remainingUsers = new ArrayList<User>();
@@ -108,13 +109,23 @@ public class EventController {
    }
 
     @GetMapping("/events/{eid}/addUser")
-    public String addUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid)
-    {
+    public String addUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid) {
         Event event = eventService.findById(eid);
         User user = userService.findById(uid);
         event.addUser(user);
         eventService.save(event);
         user.addEvent(event);
+        userService.save(user);
+        return "redirect:/events/" + eid + "/users";
+    }
+
+    @GetMapping("/events/{eid}/removeUser")
+    public String removeUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid) {
+        Event event = eventService.findById(eid);
+        User user = userService.findById(uid);
+        event.removeUser(user);
+        eventService.save(event);
+        user.removeEvent(event);
         userService.save(user);
         return "redirect:/events/" + eid + "/users";
     }

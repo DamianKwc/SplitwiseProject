@@ -41,11 +41,11 @@ public class Event {
     @Builder.Default
     private List<User> eventUsers = new ArrayList<>();
 
-    public void enrollUser(User user) {
-        eventUsers.add(user);
-    }
-
     public void addUser (User user) {
         this.eventUsers.add(user);
+    }
+
+    public void removeUser(User user) {
+        this.eventUsers.remove(user);
     }
 }

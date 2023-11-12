@@ -48,6 +48,10 @@ public class User {
         this.userEvents.add(event);
     }
 
+    public void removeEvent(Event event) {
+        this.userEvents.remove(event);
+    }
+
 }
 
 

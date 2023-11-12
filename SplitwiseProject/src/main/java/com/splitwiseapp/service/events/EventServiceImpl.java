@@ -1,6 +1,7 @@
 package com.splitwiseapp.service.events;
 
 import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.UserRepository;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,10 +14,14 @@ import java.util.List;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+
+
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository) {
+    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository, UserRepository userRepository1) {
         this.eventRepository = eventRepository;
+        this.userRepository = userRepository1;
     }
 
     @Override

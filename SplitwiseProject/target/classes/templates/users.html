@@ -42,7 +42,7 @@
         <tr>
             <th>First Name</th>
             <th>Username</th>
-
+            <th></th>
             <th th:if="${add_id!=null||remove_id!=null}"></th>
         </tr>
         </thead>
@@ -52,11 +52,17 @@
             <td th:text = "${user.username}"></td>
             <td
                     th:if="${add_id!=null||remove_id!=null}">
+                <a th:if="${remove_id!=null}" th:href="@{'/events/'+${remove_id}+'/removeUser?uid='+${user.id}}">Remove User</a>
                 <a th:if="${add_id!=null}" th:href="@{'/events/'+${add_id}+'/addUser?uid='+${user.id}}">Add User</a>
             </td>
         </tr>
         </tbody>
     </table>
+    <a th:href="@{'/events'}"
+       class="btn btn-primary btn-sm mb-3">
+        Back to Events List
+    </a>
+
 </div>
 </body>
 </html>
