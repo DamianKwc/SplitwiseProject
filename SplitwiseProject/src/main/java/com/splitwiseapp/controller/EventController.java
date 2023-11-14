@@ -77,20 +77,21 @@ public class EventController {
         return "redirect:/events";
     }
 
-   @GetMapping("/events/{id}/users")
-   public String viewUsers(@PathVariable("id") Integer id, Model model) {
-       Event event = eventService.findById(id);
-       List<User> users = event.getEventUsers();
 
-       if(users.isEmpty()) {
-           return "redirect:/events/" + id + "/addUsers";
-       }
+    @GetMapping("/events/{id}/users")
+    public String viewUsers(@PathVariable("id") Integer id, Model model) {
+        Event event = eventService.findById(id);
+        List<User> users = event.getEventUsers();
 
-       model.addAttribute("remove_id", id);
-       model.addAttribute("users", users);
-       return "users";
+        if(users.isEmpty()) {
+            return "redirect:/events/" + id + "/addUsers";
+        }
 
-   }
+        model.addAttribute("remove_id", id);
+        model.addAttribute("users", users);
+        return "users";
+
+    }
 
    @GetMapping("/events/{id}/addUsers")
    public String addUsers(@PathVariable("id") Integer id, Model model) {
