@@ -31,18 +31,85 @@
     </div>
 </nav>
 <div class="container">
+    <div class="row col-md-2">
+        <br>
+        <h2>Event Details</h2>
+    </div>
+    <br>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Event Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="temp : ${event}">
+                        <td th:text="${temp.eventName}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Settled</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                    <a
+                            class="btn btn-primary">Add Expense
+                    </a>
+                    <tr>
+                        <th colspan="3">Expenses</th>
+                    </tr>
+                    <tr>
+                        <th>Creator</th>
+                        <th>Expense Name</th>
+                        <th>View</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="expense : ${expenses}">
+                        <td th:text="${expense.user.username}"></td>
+                        <td th:text="${expense.expenseName}"></td>
+                        <td>
+                            <a class="btn btn-sm btn-success" >View</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
     <div class="row col-md-10">
-        <h2>List of Registered Users</h2>
+        <br>
+
+        <h2>Participants</h2>
     </div>
     <a th:if=${id} th:href="@{'/events/'+${id}+'/addUsers'}"
-       class="btn btn-primary">Add Users
+       class="btn btn-primary">Add Others
     </a>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
         <tr>
             <th>First Name</th>
             <th>Username</th>
-            <th></th>
             <th th:if="${add_id!=null||remove_id!=null}"></th>
         </tr>
         </thead>

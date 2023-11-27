@@ -1,30 +1,38 @@
 package com.splitwiseapp.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.event.spi.EventType;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
+@Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table( name = "bills")
+@Table( name = "expenses")
 public class Expense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bill_id")
+    @Column(name = "expense_id")
     private Integer id;
 
     @Column(name = "amount")
-    private double amount;
+    private BigDecimal amount;
 
-    @Column(name = "owner_id")
-    private int idOwner;
+    @Column(name = "expense_name")
+    private String expenseName;
 
-    @Column(name = "bill_name")
-    private String billName;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "event_id")
-    private int idEvent;
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
 }

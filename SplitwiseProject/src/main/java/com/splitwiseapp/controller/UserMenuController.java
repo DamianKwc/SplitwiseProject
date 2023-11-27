@@ -6,6 +6,7 @@ import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.users.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 @Controller
+@AllArgsConstructor
 public class UserMenuController {
 
     private final UserRepository userRepository;
@@ -23,13 +25,6 @@ public class UserMenuController {
     private final EventService eventService;
     private final EventRepository eventRepository;
 
-    @Autowired
-    public UserMenuController(UserRepository userRepository, UserService userService, EventService eventService, EventRepository eventRepository) {
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.eventService = eventService;
-        this.eventRepository = eventRepository;
-    }
     @GetMapping("/profile")
     public String userProfile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

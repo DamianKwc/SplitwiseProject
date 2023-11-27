@@ -1,5 +1,7 @@
 package com.splitwiseapp.service.events;
 
+import com.splitwiseapp.dto.events.EventDto;
+import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.User;
 import jakarta.validation.constraints.NotEmpty;

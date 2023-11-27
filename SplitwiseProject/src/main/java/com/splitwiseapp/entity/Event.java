@@ -1,5 +1,6 @@
 package com.splitwiseapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -37,6 +38,22 @@ public class Event {
     )
     @Builder.Default
     private List<User> eventUsers = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH})
+    @Builder.Default
+    private List<Expense> expenses = new ArrayList<>();
+
+    public void addExpense(Expense expense) {
+        this.expenses.add(expense);
+        expense.setEvent(this);
+    }
+
+    public void removeExpense(Expense expense) {
+        this.expenses.remove(expense);
+        expense.setEvent(null);
+    }
 
     public void addUser (User user) {
         this.eventUsers.add(user);

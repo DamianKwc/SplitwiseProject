@@ -1,7 +1,10 @@
 package com.splitwiseapp.service.events;
 
+import com.splitwiseapp.dto.events.EventDto;
+import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.User;
+import com.splitwiseapp.repository.EventMembersRepository;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.UserRepository;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -16,14 +20,11 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-
-
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository, UserRepository userRepository1) {
+    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository) {
         this.eventRepository = eventRepository;
-        this.userRepository = userRepository1;
+        this.userRepository = userRepository;
     }
-
     @Override
     public List<Event> findAllEvents() {
         return eventRepository.findAll();

@@ -38,7 +38,6 @@
             <th>ID</th>
             <th>Event</th>
             <th>Event action</th>
-            <th>Users</th>
         </tr>
         </thead>
 
@@ -51,14 +50,11 @@
                    class="btn btn-danger btn-sm"
                    onclick="if (!(confirm('Are you sure ?'))) return false">Delete</a>
                 <a class="btn btn-sm btn-success" >Expenses</a>
-            </td>
-            <td>
-                <a th:href="@{'/events/'+${temp.id}+'/users'}">
-                    <p th:if="#{not #lists.isEmpty(temp.eventUsers)}">View Users</p>
+                <a th:href="@{/events/{id}/users(id=${temp.id})}" class="btn btn-sm btn-primary">
+                    <p th:if="#{not #lists.isEmpty(temp.eventUsers)}">Details</p>
                 </a>
             </td>
         </tr>
-
             </td>
         </tr>
 
