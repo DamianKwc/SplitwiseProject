@@ -1,9 +1,8 @@
 package com.splitwiseapp.dto.expenses;
 
-import jakarta.validation.constraints.NotEmpty;
+import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.User;
 import lombok.*;
-
-import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -12,10 +11,10 @@ import java.math.BigDecimal;
 @ToString
 public class ExpenseDto {
 
-    @NotEmpty
-    private BigDecimal amount;
-
-    @NotEmpty
     private String expenseName;
+    private Integer eventId;
+    private Integer userId;
+    private User user;
+    private Event event;
 
 }

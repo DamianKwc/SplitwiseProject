@@ -30,7 +30,6 @@ public class LoginController {
         return "redirect:/login";
     }
 
-    // handler method to handle login request
     @GetMapping("/login")
     public String login(){
         return "login";
@@ -38,7 +37,7 @@ public class LoginController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model){
-        // create model object to store form data
+
         UserDto user = new UserDto();
         model.addAttribute("user", user);
         return "register";

@@ -1,60 +1,82 @@
 package com.splitwiseapp.service.expenses;
 
+import com.splitwiseapp.dto.expenses.ExpenseDto;
+import com.splitwiseapp.dto.users.UserDto;
+import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
+import com.splitwiseapp.entity.Role;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.splitwiseapp.repository.UserRepository;
+import lombok.Data;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+
+@Data
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
 
     private ExpenseRepository expenseRepository;
     private EventRepository eventRepository;
-
-    @Autowired
-    public ExpenseServiceImpl(ExpenseRepository expenseRepository) {
-        this.expenseRepository = expenseRepository;
-    }
-
-    //expenses without duplicates
-    @Override
-    public List<Expense> viewExpenses() {
-        List<Expense> allExpenses = expenseRepository.findAll();
-        Set<String> uniqueExpenseNames = new HashSet<>();
-
-        List<Expense> uniqueExpenses = allExpenses.stream()
-                .filter(expense -> uniqueExpenseNames.add(expense.getExpenseName()))
-                .collect(Collectors.toList());
-
-        return uniqueExpenses;
-    }
-    //expenses without duplicates and withing event by id
-    @Override
-    public List<Expense> viewExpensesByEventId(Integer eventId) {
-        List<Expense> allExpenses = expenseRepository.findByEventId(eventId);
-
-        Set<String> uniqueExpenseNames = new HashSet<>();
-        List<Expense> uniqueExpenses = new ArrayList<>();
-
-        for (Expense expense : allExpenses) {
-            if (uniqueExpenseNames.add(expense.getExpenseName())) {
-                uniqueExpenses.add(expense);
-            }
-        }
-
-        return uniqueExpenses;
-    }
+    private UserRepository userRepository;
 
     @Override
-    public List<Expense> findAllExpenses() {
+    public List<Expense> getAllExpenses() {
         return expenseRepository.findAll();
+    }
+
+    @Override
+    public List<Expense> getExpensesByEvent(Event event) {
+        return expenseRepository.findByEvent(event);
+    }
+
+    @Override
+    public List<Expense> getExpensesByUser(User user) {
+        return expenseRepository.findByUser(user);
+    }
+
+    @Override
+    public Expense getExpenseById(Integer expenseId) {
+        return expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+    }
+
+//    @Override
+//    public Expense createExpense(ExpenseDto expenseDto) {
+//        Event event = eventRepository.findById(expenseDto.getEventId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + expenseDto.getEventId()));
+//
+//        User user = userRepository.findById(expenseDto.getUserId())
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + expenseDto.getUserId()));
+//
+//        Expense expense = new Expense();
+//        expense.setExpenseName(expenseDto.getExpenseName());
+//        expense.setEvent(event);
+//        expense.setUser(user);
+//
+//        return expenseRepository.save(expense);
+//    }
+
+    @Override
+    public void deleteExpense(Integer expenseId) {
+        Expense expense = getExpenseById(expenseId);
+        expenseRepository.delete(expense);
+    }
+
+    @Override
+    public void saveExpense(ExpenseDto expenseDto) {
+        Expense expense = new Expense();
+        expense.setExpenseName(expenseDto.getExpenseName());
+
+        expenseRepository.save(expense);
+    }
+
+    @Override
+    public Expense save(Expense expense) {
+        return expenseRepository.save(expense);
     }
 
     @Override
@@ -62,18 +84,9 @@ public class ExpenseServiceImpl implements ExpenseService {
         expenseRepository.save(expense);
     }
 
-    @Override
-    public Expense findById(Integer expenseId) {
-        return expenseRepository.findById(expenseId).orElseThrow();
-    }
-
-    @Override
-    public Expense findByExpenseName(String expenseName) {
-        return expenseRepository.findByExpenseName(expenseName);
-    }
-
-    @Override
-    public void deleteById(Integer expenseId) {
-        expenseRepository.deleteById(expenseId);
+    private ExpenseDto mapToExpenseDto(Expense expense){
+        ExpenseDto expenseDto = new ExpenseDto();
+        expenseDto.setExpenseName(expense.getExpenseName());
+        return expenseDto;
     }
 }

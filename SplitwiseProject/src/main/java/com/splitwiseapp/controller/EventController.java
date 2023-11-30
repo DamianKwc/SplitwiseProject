@@ -96,9 +96,6 @@ public class EventController {
 
         model.addAttribute("event", event);
 
-        List<Expense> expenses = expenseService.viewExpensesByEventId(id);
-        model.addAttribute("expenses", expenses);
-
         if (users.isEmpty()) {
             return "redirect:/events/" + id + "/addUsers";
         }
@@ -124,9 +121,6 @@ public class EventController {
        //for showing details while adding users
        Event event = eventService.findById(id);
        model.addAttribute("event", event);
-
-       List<Expense> expenses = expenseService.findAllExpenses();
-       model.addAttribute("expenses", expenses);
 
        model.addAttribute("users",remainingUsers);
        model.addAttribute("add_id", id);

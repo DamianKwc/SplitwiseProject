@@ -70,9 +70,7 @@
             <div class="card-body">
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
-                    <a
-                            class="btn btn-primary">Add Expense
-                    </a>
+                    <a th:href="@{'/events/' + ${id} + '/expenses'}" class="btn btn-primary">Create Expense</a>
                     <tr>
                         <th colspan="3">Expenses</th>
                     </tr>

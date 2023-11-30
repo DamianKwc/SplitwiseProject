@@ -2,9 +2,6 @@ package com.splitwiseapp.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.event.spi.EventType;
-
-import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -21,18 +18,26 @@ public class Expense {
     @Column(name = "expense_id")
     private Integer id;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @Column(name = "expense_name")
+    @JsonIgnore
+    @Column(name = "expense_name", nullable = false)
     private String expenseName;
 
-    @ManyToOne
+//    @OneToMany(mappedBy = "expense")
+//    private Set<UserExpense> userExpenses;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id")
-    private Event event;
+    public void addEvent(Event event) {
+        setEvent(event);
+    }
+
 
 }

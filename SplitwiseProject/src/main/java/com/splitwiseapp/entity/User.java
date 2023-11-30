@@ -50,16 +50,6 @@ public class User {
     @Builder.Default
     private List<Expense> expenses = new ArrayList<>();
 
-    public void addExpense(Expense expense) {
-        this.expenses.add(expense);
-        expense.setUser(this);
-    }
-
-    public void removeExpense(Expense expense) {
-        this.expenses.remove(expense);
-        expense.setUser(null);
-    }
-
     public void addEvent(Event event) {
         this.userEvents.add(event);
     }
