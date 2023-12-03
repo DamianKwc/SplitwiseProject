@@ -9,14 +9,17 @@ import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
 import com.splitwiseapp.repository.UserRepository;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Data
 @Service
+@AllArgsConstructor
 public class ExpenseServiceImpl implements ExpenseService {
 
     private ExpenseRepository expenseRepository;
@@ -88,5 +91,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         ExpenseDto expenseDto = new ExpenseDto();
         expenseDto.setExpenseName(expense.getExpenseName());
         return expenseDto;
+    }
+    public List<ExpenseDto> findAllExpenses() {
+        List<Expense> expenses = expenseRepository.findAll();
+        return expenses.stream()
+                .map((expense) -> mapToExpenseDto(expense))
+                .collect(Collectors.toList());
     }
 }
