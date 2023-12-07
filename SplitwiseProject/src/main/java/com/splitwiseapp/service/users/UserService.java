@@ -1,7 +1,7 @@
 package com.splitwiseapp.service.users;
 
-import com.splitwiseapp.entity.User;
 import com.splitwiseapp.dto.users.UserDto;
+import com.splitwiseapp.entity.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +13,8 @@ public interface UserService{
     List<UserDto> findAllUsers();
     User findById(Integer userId);
     User findByUsername(String username);
-
     List<User> findAll();
-
     User save(User user);
+    User getCurrentlyLoggedInUser();
 
 }

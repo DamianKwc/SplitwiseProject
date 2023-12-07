@@ -1,8 +1,6 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.dto.expenses.ExpenseDto;
-import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
@@ -12,7 +10,6 @@ import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
-import jakarta.validation.Valid;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -22,11 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import static com.splitwiseapp.shared.UserUtils.getCurrentlyLoggedInUser;
-
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
 
 @Data
 @Controller
@@ -70,7 +62,8 @@ public class ExpenseController {
         Expense expense = Expense.builder()
                 .expenseName(expenseDto.getExpenseName())
                 .event(eventService.findById(id))
-                .user(getCurrentlyLoggedInUser(userRepository)).build();
+                .user(userService.getCurrentlyLoggedInUser())
+                .build();
 
         expenseService.saveExpense(expense);
 

@@ -3,13 +3,8 @@ package com.splitwiseapp.controller;
 import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.Event;
-import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
-import com.splitwiseapp.repository.EventRepository;
-import com.splitwiseapp.repository.ExpenseRepository;
-import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventService;
-import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -18,22 +13,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.splitwiseapp.shared.UserUtils.getCurrentlyLoggedInUser;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
 public class EventController {
 
     private final EventService eventService;
-    private final EventRepository eventRepository;
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final ExpenseService expenseService;
-    private final ExpenseRepository expenseRepository;
 
     @GetMapping("/events")
     public String events(Model model) {
@@ -73,11 +61,11 @@ public class EventController {
 
         Event event = Event.builder()
                 .eventName(eventDto.getEventName())
-                .owner(getCurrentlyLoggedInUser(userRepository))
+                .owner(userService.getCurrentlyLoggedInUser())
                 .build();
 
-        event.addUser(getCurrentlyLoggedInUser(userRepository));
-        event.setOwner(getCurrentlyLoggedInUser(userRepository));
+        event.addUser(userService.getCurrentlyLoggedInUser());
+        event.setOwner(userService.getCurrentlyLoggedInUser());
         eventService.saveEvent(event);
 
         return "redirect:/events";
@@ -92,40 +80,29 @@ public class EventController {
     @GetMapping("/events/{id}/users")
     public String viewUsers(@PathVariable("id") Integer id, Model model) {
         Event event = eventService.findById(id);
-        List<User> users = event.getEventUsers();
+        List<User> allUsers = userService.findAll();
+        List<User> eventUsers = event.getEventUsers();
+        List<User> remainingUsers = new ArrayList<>();
 
         model.addAttribute("event", event);
 
-        if (users.isEmpty()) {
+        if (eventUsers.isEmpty()) {
             return "redirect:/events/" + id + "/addUsers";
         }
 
+        for (User u: allUsers)
+        {
+            if (!eventUsers.contains(u)) {
+                remainingUsers.add(u);
+            }
+        }
+
+        model.addAttribute("add_id", id);
         model.addAttribute("remove_id", id);
-        model.addAttribute("users", users);
+        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("remainingUsers", remainingUsers);
         return "users";
     }
-
-   @GetMapping("/events/{id}/addUsers")
-   public String addUsers(@PathVariable("id") Integer id, Model model) {
-       List<User> eventUsers = eventService.findById(id).getEventUsers();
-       List<User> users = userService.findAll();
-       List<User> remainingUsers = new ArrayList<User>();
-
-       for (User u: users)
-       {
-           if (!eventUsers.contains(u)) {
-               remainingUsers.add(u);
-           }
-       }
-
-       //for showing details while adding users
-       Event event = eventService.findById(id);
-       model.addAttribute("event", event);
-
-       model.addAttribute("users",remainingUsers);
-       model.addAttribute("add_id", id);
-       return "users";
-   }
 
     @GetMapping("/events/{eid}/addUser")
     public String addUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid) {
