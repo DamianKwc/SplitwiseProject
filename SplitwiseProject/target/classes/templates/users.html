@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <title>Registration and Login System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-          crossorigin="anonymous">
 </head>
+
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -85,7 +86,7 @@
                         <td th:text="${expense.user.username}"></td>
                         <td th:text="${expense.expenseName}"></td>
                         <td>
-                            <a class="btn btn-sm btn-success" >View</a>
+                            <a class="btn btn-sm btn-success">View</a>
                         </td>
                     </tr>
                     </tbody>
@@ -96,38 +97,88 @@
 </div>
 <div class="container">
     <div class="row col-md-10">
-        <br>
+        <div class="card">
+            <div class="card-body">
+                <h2>Participants</h2>
 
-        <h2>Participants</h2>
+                <div class="col-md-12">
+                    <div id="usersModal" class="modal fade bg-dark" role="dialog">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1>Add new participant of event</h1>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-dark">
+                                        <tr>
+                                            <th>First Name</th>
+                                            <th>Username</th>
+                                            <th th:if="${add_id!=null||remove_id!=null}"></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="user : ${remainingUsers}">
+                                            <td th:text="${user.firstName}"></td>
+                                            <td th:text="${user.username}"></td>
+                                            <td>
+                                                <a th:if="${add_id!=null}"
+                                                   th:href="@{'/events/'+${add_id}+'/addUser?uid='+${user.id}}">
+                                                    Add User
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <input class="btn btn-default" data-bs-dismiss="modal" value="Close">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button th:if="${add_id}" th:href="@{'/events/'+${add_id}+'/addUsers'}"
+                       class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
+                        Add event participant
+                    </button>
+                </div>
+            </div>
+
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                <tr>
+                    <th>First Name</th>
+                    <th>Username</th>
+                    <th th:if="${add_id!=null||remove_id!=null}"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${eventUsers}">
+                    <td th:text="${user.firstName}"></td>
+                    <td th:text="${user.username}"></td>
+                    <td>
+                        <a th:if="${remove_id!=null}"
+                           th:href="@{'/events/'+${remove_id}+'/removeUser?uid='+${user.id}}">
+                            Remove User
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <a th:href="@{'/events'}"
+               class="btn btn-primary btn-sm mb-3">
+                Back to Events List
+            </a>
+            
+        </div>
     </div>
-    <a th:if=${id} th:href="@{'/events/'+${id}+'/addUsers'}"
-       class="btn btn-primary">Add Others
-    </a>
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>First Name</th>
-            <th>Username</th>
-            <th th:if="${add_id!=null||remove_id!=null}"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each = "user : ${users}">
-            <td th:text = "${user.firstName}"></td>
-            <td th:text = "${user.username}"></td>
-            <td
-                    th:if="${add_id!=null||remove_id!=null}">
-                <a th:if="${remove_id!=null}" th:href="@{'/events/'+${remove_id}+'/removeUser?uid='+${user.id}}">Remove User</a>
-                <a th:if="${add_id!=null}" th:href="@{'/events/'+${add_id}+'/addUser?uid='+${user.id}}">Add User</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <a th:href="@{'/events'}"
-       class="btn btn-primary btn-sm mb-3">
-        Back to Events List
-    </a>
-
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous">
+</script>
+
 </body>
 </html>
