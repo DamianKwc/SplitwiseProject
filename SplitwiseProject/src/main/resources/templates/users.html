@@ -32,28 +32,11 @@
     </div>
 </nav>
 <div class="container">
-    <div class="row col-md-2">
-        <br>
-        <h2>Event Details</h2>
+    <div class="row">
+        <h2 th:text="'Details of Event: ' + ${event.eventName}"></h2>
     </div>
     <br>
     <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="card">
-            <div class="card-body">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>Event Name</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="temp : ${event}">
-                        <td th:text="${temp.eventName}"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
         <div class="card">
             <div class="card-body">
                 <table class="table table-bordered table-hover">
