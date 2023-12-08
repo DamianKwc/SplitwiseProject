@@ -1,8 +1,8 @@
 package com.splitwiseapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class Event {
     private String eventName;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-                          CascadeType.DETACH, CascadeType.REFRESH})
+            CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "owner_id")
     private User owner;
 
@@ -43,11 +43,19 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private Set<Expense> expenses;
 
-    public void addUser (User user) {
+    public void addUser(User user) {
         this.eventUsers.add(user);
     }
 
     public void removeUser(User user) {
         this.eventUsers.remove(user);
+    }
+
+    public void addExpense(Expense expense) {
+        this.expenses.add(expense);
+    }
+
+    public void removeExpense(Expense expense) {
+        this.expenses.remove(expense);
     }
 }

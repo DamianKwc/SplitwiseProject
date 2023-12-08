@@ -33,14 +33,13 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     private final ExpenseRepository expenseRepository;
 
-    @GetMapping("/events/{id}/expenses")
-    public String showExpenseForm(@PathVariable Integer id, Model model) {
-        Event event = eventService.findById(id);
+    @GetMapping("/events/{eventId}/newExpense")
+    public String showExpenseForm(@PathVariable Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
         User user = event.getOwner();
 
         model.addAttribute("event", event);
         model.addAttribute("user", user);
-        model.addAttribute("id", id);
         model.addAttribute("newExpense", new ExpenseDto());
 
         return "new-expense";

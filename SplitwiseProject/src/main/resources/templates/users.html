@@ -31,49 +31,35 @@
         </div>
     </div>
 </nav>
+<div class="row">
+    <h2 th:text="'Details of Event: ' + ${event.eventName}"></h2>
+</div>
 <div class="container">
-    <div class="row">
-        <h2 th:text="'Details of Event: ' + ${event.eventName}"></h2>
-    </div>
-    <br>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="row col-md-10">
         <div class="card">
             <div class="card-body">
+                <h2>Expenses in this event</h2>
+
+                <a th:href="@{'/events/' + ${id} + '/newExpense'}" class="btn btn-primary">
+                    Create Expense
+                </a>
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
-                    <tr>
-                        <th>Settled</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark">
-                    <a th:href="@{'/events/' + ${id} + '/expenses'}" class="btn btn-primary">Create Expense</a>
-                    <tr>
-                        <th colspan="3">Expenses</th>
-                    </tr>
                     <tr>
                         <th>Creator</th>
                         <th>Expense Name</th>
-                        <th>View</th>
+                        <th>Amount</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="expense : ${expenses}">
+                    <tr th:each="expense : ${eventExpenses}">
                         <td th:text="${expense.user.username}"></td>
                         <td th:text="${expense.expenseName}"></td>
-                        <td>
-                            <a class="btn btn-sm btn-success">View</a>
-                        </td>
+                        <td th:text="${expense.expenseAmount}"></td>
                     </tr>
                     </tbody>
                 </table>
+
             </div>
         </div>
     </div>
@@ -121,7 +107,7 @@
                         </div>
                     </div>
                     <button th:if="${add_id}" th:href="@{'/events/'+${add_id}+'/addUsers'}"
-                       class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
+                            class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
                         Add event participant
                     </button>
                 </div>
@@ -149,12 +135,11 @@
                 </tbody>
             </table>
 
-            <a th:href="@{'/events'}"
-               class="btn btn-primary btn-sm mb-3">
-                Back to Events List
-            </a>
-            
         </div>
+        <a th:href="@{'/events'}"
+           class="btn btn-primary btn-sm mb-3">
+            Back to Events List
+        </a>
     </div>
 </div>
 

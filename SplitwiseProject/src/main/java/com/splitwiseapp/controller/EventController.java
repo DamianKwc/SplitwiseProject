@@ -3,8 +3,10 @@ package com.splitwiseapp.controller;
 import com.splitwiseapp.dto.events.EventDto;
 import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.events.EventService;
+import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +24,7 @@ public class EventController {
 
     private final EventService eventService;
     private final UserService userService;
+    private final ExpenseService expenseService;
 
     @GetMapping("/events")
     public String events(Model model) {
@@ -78,11 +81,12 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}/users")
-    public String viewUsers(@PathVariable("id") Integer id, Model model) {
+    public String showEventDetails(@PathVariable("id") Integer id, Model model) {
         Event event = eventService.findById(id);
         List<User> allUsers = userService.findAll();
         List<User> eventUsers = event.getEventUsers();
         List<User> remainingUsers = new ArrayList<>();
+        List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(id);
 
         model.addAttribute("event", event);
 
@@ -101,29 +105,52 @@ public class EventController {
         model.addAttribute("remove_id", id);
         model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("remainingUsers", remainingUsers);
+        model.addAttribute("eventExpenses", eventExpenses);
         return "users";
     }
 
-    @GetMapping("/events/{eid}/addUser")
-    public String addUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid) {
-        Event event = eventService.findById(eid);
-        User user = userService.findById(uid);
+    @GetMapping("/events/{eventId}/addUser")
+    public String addUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
+        Event event = eventService.findById(eventId);
+        User user = userService.findById(userId);
         event.addUser(user);
         eventService.save(event);
         user.addEvent(event);
         userService.save(user);
-        return "redirect:/events/" + eid + "/users";
+        return "redirect:/events/" + eventId + "/users";
     }
 
-    @GetMapping("/events/{eid}/removeUser")
-    public String removeUser(@PathVariable("eid") Integer eid, @RequestParam("uid") Integer uid) {
-        Event event = eventService.findById(eid);
-        User user = userService.findById(uid);
+    @GetMapping("/events/{eventId}/removeUser")
+    public String removeUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
+        Event event = eventService.findById(eventId);
+        User user = userService.findById(userId);
         event.removeUser(user);
         eventService.save(event);
         user.removeEvent(event);
         userService.save(user);
-        return "redirect:/events/" + eid + "/users";
+        return "redirect:/events/" + eventId + "/users";
+    }
+
+    @GetMapping("/events/{eventId}/addExpense")
+    public String addExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
+        Event event = eventService.findById(eventId);
+        Expense expense = expenseService.findById(expenseId);
+        event.addExpense(expense);
+        eventService.save(event);
+        expense.addEvent(event);
+        expenseService.saveExpense(expense);
+        return "redirect:/events/" + eventId + "/expenses";
+    }
+
+    @GetMapping("/events/{eventId}/removeExpense")
+    public String removeExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
+        Event event = eventService.findById(eventId);
+        Expense expense = expenseService.findById(expenseId);
+        event.removeExpense(expense);
+        eventService.save(event);
+        expense.removeEvent();
+        expenseService.saveExpense(expense);
+        return "redirect:/events/" + eventId + "/expenses";
     }
 
     private boolean doesEventWithGivenNameAlreadyExist(EventDto eventDto) {

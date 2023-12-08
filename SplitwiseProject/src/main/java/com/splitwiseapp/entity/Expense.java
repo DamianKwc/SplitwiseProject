@@ -28,9 +28,6 @@ public class Expense {
     @Column(name = "amount", nullable = false)
     private BigDecimal expenseAmount;
 
-//    @OneToMany(mappedBy = "expense")
-//    private Set<UserExpense> userExpenses;
-
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "event_id")
@@ -45,5 +42,8 @@ public class Expense {
         setEvent(event);
     }
 
+    public void removeEvent() {
+        this.event = null;
+    }
 
 }
