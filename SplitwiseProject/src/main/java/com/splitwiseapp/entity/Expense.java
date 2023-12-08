@@ -3,6 +3,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @Builder
@@ -21,6 +23,10 @@ public class Expense {
     @JsonIgnore
     @Column(name = "expense_name", nullable = false)
     private String expenseName;
+
+    @JsonIgnore
+    @Column(name = "amount", nullable = false)
+    private BigDecimal expenseAmount;
 
 //    @OneToMany(mappedBy = "expense")
 //    private Set<UserExpense> userExpenses;

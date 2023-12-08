@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.math.BigDecimal;
+
 @Data
 @Controller
 public class ExpenseController {
@@ -61,6 +63,7 @@ public class ExpenseController {
 
         Expense expense = Expense.builder()
                 .expenseName(expenseDto.getExpenseName())
+                .expenseAmount(new BigDecimal(expenseDto.getExpenseAmount().replaceAll(",", ".")))
                 .event(eventService.findById(id))
                 .user(userService.getCurrentlyLoggedInUser())
                 .build();

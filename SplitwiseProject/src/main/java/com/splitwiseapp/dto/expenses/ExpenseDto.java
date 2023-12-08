@@ -1,7 +1,6 @@
 package com.splitwiseapp.dto.expenses;
 
-import com.splitwiseapp.entity.Event;
-import com.splitwiseapp.entity.User;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 @Getter
@@ -11,10 +10,9 @@ import lombok.*;
 @ToString
 public class ExpenseDto {
 
+    @NotEmpty
     private String expenseName;
-    private Integer eventId;
-    private Integer userId;
-    private User user;
-    private Event event;
 
+    @NotEmpty
+    private String expenseAmount;
 }
