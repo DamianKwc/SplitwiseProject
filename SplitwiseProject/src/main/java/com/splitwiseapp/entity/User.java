@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -45,7 +43,7 @@ public class User {
     private List<Event> userEvents = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+    @ManyToMany(mappedBy = "participants", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
     @Builder.Default
     private List<Expense> expenses = new ArrayList<>();
@@ -56,6 +54,14 @@ public class User {
 
     public void removeEvent(Event event) {
         this.userEvents.remove(event);
+    }
+
+    public void addExpense(Expense expense) {
+        this.expenses.add(expense);
+    }
+
+    public void removeExpense(Expense expense) {
+        this.expenses.remove(expense);
     }
 
 }

@@ -11,8 +11,11 @@ import lombok.*;
 public class ExpenseDto {
 
     @NotEmpty
-    private String expenseName;
+    private String name;
 
     @NotEmpty
-    private String expenseAmount;
+    private String amount;
+
+    @NotEmpty
+    private String participantUsername;
 }

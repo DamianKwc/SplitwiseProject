@@ -15,12 +15,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Controller
@@ -36,12 +36,11 @@ public class ExpenseController {
     @GetMapping("/events/{eventId}/newExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
-        User user = event.getOwner();
+        List<User> eventUsers = event.getEventUsers();
 
         model.addAttribute("event", event);
-        model.addAttribute("user", user);
+        model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("newExpense", new ExpenseDto());
-
         return "new-expense";
     }
 
@@ -50,9 +49,11 @@ public class ExpenseController {
                                 @PathVariable Integer id,
                                 BindingResult result,
                                 Model model) {
+        Set<User> participants = getUsers(expenseDto);
+        BigDecimal amount = new BigDecimal(expenseDto.getAmount().replaceAll(",", "."));
 
         if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
-            result.rejectValue("expenseName", null,
+            result.rejectValue("name", null,
                     "That expense already exists or given name is incorrect.");
         }
         if (result.hasErrors()) {
@@ -61,10 +62,11 @@ public class ExpenseController {
         }
 
         Expense expense = Expense.builder()
-                .expenseName(expenseDto.getExpenseName())
-                .expenseAmount(new BigDecimal(expenseDto.getExpenseAmount().replaceAll(",", ".")))
+                .name(expenseDto.getName())
+                .amount(amount)
+                .equalSplit(expenseService.splitCostEquallyPerParticipants(amount, participants.size()))
                 .event(eventService.findById(id))
-                .user(userService.getCurrentlyLoggedInUser())
+                .participants(participants)
                 .build();
 
         expenseService.saveExpense(expense);
@@ -72,9 +74,41 @@ public class ExpenseController {
         return "redirect:/events/" + id + "/users";
     }
 
+    @GetMapping("/expenses/{expenseId}/addUser")
+    public String addUser(@PathVariable("expenseId") Integer expenseId, @RequestParam("userId") Integer userId) {
+        Expense expense = expenseService.findById(expenseId);
+        User user = userService.findById(userId);
+        expense.addParticipant(user);
+        expenseService.saveExpense(expense);
+        user.addExpense(expense);
+        userService.save(user);
+        return "redirect:/expenses/" + expenseId + "/users";
+    }
+
+    @GetMapping("/expenses/{expenseId}/removeUser")
+    public String removeUser(@PathVariable("expenseId") Integer expenseId, @RequestParam("userId") Integer userId) {
+        Expense expense = expenseService.findById(expenseId);
+        User user = userService.findById(userId);
+        expense.removeParticipant(user);
+        expenseService.saveExpense(expense);
+        user.removeExpense(expense);
+        userService.save(user);
+        return "redirect:/expenses/" + expenseId + "/users";
+    }
+
+    private Set<User> getUsers(ExpenseDto expenseDto) {
+        Set<User> participants = new HashSet<>();
+        String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
+        for (String username : splitUsernames) {
+            User foundUser = userService.findByUsername(username);
+            participants.add(foundUser);
+        }
+        return participants;
+    }
+
     private boolean doesExpenseWithGivenNameAlreadyExist(ExpenseDto expenseDto) {
-        Expense expense = expenseRepository.findByExpenseName(expenseDto.getExpenseName());
-        return expense != null && !StringUtils.isBlank(expense.getExpenseName());
+        Expense expense = expenseRepository.findByName(expenseDto.getName());
+        return expense != null && !StringUtils.isBlank(expense.getName());
     }
 
 }

@@ -9,6 +9,8 @@ import lombok.Data;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,11 +31,6 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public List<Expense> findAll() {
-        return expenseRepository.findAll();
-    }
-
-    @Override
     public List<Expense> findExpensesForGivenEvent(Integer eventId) {
         return expenseRepository.findAll().stream()
                 .filter(expense -> eventId.equals(expense.getEvent().getId()))
@@ -45,4 +42,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         expenseRepository.save(expense);
     }
 
+    @Override
+    public BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber) {
+        return amount.divide(BigDecimal.valueOf(participantsNumber),2, RoundingMode.CEILING);
+    }
 }

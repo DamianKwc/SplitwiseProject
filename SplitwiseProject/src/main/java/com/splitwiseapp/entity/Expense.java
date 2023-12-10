@@ -1,9 +1,12 @@
 package com.splitwiseapp.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,21 +25,30 @@ public class Expense {
 
     @JsonIgnore
     @Column(name = "expense_name", nullable = false)
-    private String expenseName;
+    private String name;
 
     @JsonIgnore
     @Column(name = "amount", nullable = false)
-    private BigDecimal expenseAmount;
+    private BigDecimal amount;
+
+    @JsonIgnore
+    @Column(name = "equal_split")
+    private BigDecimal equalSplit;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "event_id")
     private Event event;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinTable(
+            name = "expense_participants",
+            joinColumns = @JoinColumn(name = "expense_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> participants = new HashSet<>();
 
     public void addEvent(Event event) {
         setEvent(event);
@@ -46,4 +58,11 @@ public class Expense {
         this.event = null;
     }
 
+    public void addParticipant(User participant) {
+        this.participants.add(participant);
+    }
+
+    public void removeParticipant(User participant) {
+        this.participants.remove(participant);
+    }
 }

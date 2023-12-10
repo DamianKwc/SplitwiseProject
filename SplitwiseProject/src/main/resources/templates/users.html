@@ -43,19 +43,27 @@
                 <a th:href="@{'/events/' + ${id} + '/newExpense'}" class="btn btn-primary">
                     Create Expense
                 </a>
+                <br>
+                <br>
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
                     <tr>
-                        <th>Creator</th>
                         <th>Expense Name</th>
-                        <th>Amount</th>
+                        <th>Total cost</th>
+                        <th>Expense participants</th>
+                        <th>Cost per participant</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="expense : ${eventExpenses}">
-                        <td th:text="${expense.user.username}"></td>
-                        <td th:text="${expense.expenseName}"></td>
-                        <td th:text="${expense.expenseAmount}"></td>
+                        <td th:text="${expense.name}"></td>
+                        <td th:text="${expense.amount}"></td>
+                        <td>
+                            <p th:each="participant : ${expense.participants}">
+                                <span th:text="${participant.username}"></span>
+                            </p>
+                        </td>
+                        <td th:text="${expense.equalSplit}"> </td>
                     </tr>
                     </tbody>
                 </table>
@@ -106,8 +114,7 @@
                             </div>
                         </div>
                     </div>
-                    <button th:if="${add_id}" th:href="@{'/events/'+${add_id}+'/addUsers'}"
-                            class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
                         Add event participant
                     </button>
                 </div>
@@ -137,7 +144,7 @@
 
         </div>
         <a th:href="@{'/events'}"
-           class="btn btn-primary btn-sm mb-3">
+           class="btn btn-secondary">
             Back to Events List
         </a>
     </div>
