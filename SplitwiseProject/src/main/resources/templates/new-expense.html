@@ -50,7 +50,7 @@
                         </div>
                         <div class="form-group mb-3">
                             <label class="control-label">Expense amount</label>
-                            <input type="text" id="expenseAmount" name="expenseAmount" th:field="*{amount}"
+                            <input type="text" id="expenseAmount" name="expenseAmount" th:field="*{cost}"
                                    class="form-control"
                                    placeholder="Enter expense amount"/>
                         </div>
@@ -67,8 +67,8 @@
                         <br>
                         <div class="form-group mb-3">
                             <button type="submit" class="btn btn-primary">Save Expense</button>
-                            <a th:href="@{'/events/' + ${event.id} + '/users'}" class="btn btn-secondary">
-                                Back to Event details
+                            <a th:href="@{'/events/' + ${event.id} + '/expenses'}" class="btn btn-secondary">
+                                Back to all expenses
                             </a>
                         </div>
                     </form>

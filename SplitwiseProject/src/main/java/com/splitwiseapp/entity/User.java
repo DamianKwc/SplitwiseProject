@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,18 @@ public class User {
 
     @Column(name = "password")
     private String password;
+
+    @JsonIgnore
+    @Column(name = "user_debt")
+    private BigDecimal userDebt;
+
+    @JsonIgnore
+    @Column(name = "paid_off_amount")
+    private BigDecimal paidOffAmount;
+
+    @JsonIgnore
+    @Column(name = "balance")
+    private BigDecimal balance;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles",

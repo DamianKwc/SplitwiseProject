@@ -47,11 +47,23 @@
             <td th:text="${temp.eventName}"></td>
             <td>
                 <a th:href="@{/delete(eventId=${temp.id})}"
-                   class="btn btn-danger btn-sm"
-                   onclick="if (!(confirm('Are you sure ?'))) return false">Delete</a>
-                <a class="btn btn-sm btn-success" >Expenses</a>
-                <a th:href="@{/events/{id}/users(id=${temp.id})}" class="btn btn-sm btn-primary">
-                    <p th:if="#{not #lists.isEmpty(temp.eventUsers)}">Details</p>
+                   class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure ?'))) return false">
+                    Delete
+                </a>
+                <a th:href="@{/events/{id}/expenses(id=${temp.id})}" class="btn btn-sm btn-success">
+                    Expenses
+                </a>
+                <a th:switch="${#lists.size(temp.eventUsers)}">
+                    <span th:case="0">
+                        <a th:href="@{'/events/'+${temp.id}+'/addUser?userId=1'}" class="btn btn-sm btn-primary">
+                            Add participants
+                        </a>
+                    </span>
+                    <span th:case="*">
+                        <a th:href="@{/events/{id}/users(id=${temp.id})}" class="btn btn-sm btn-primary">
+                            Participants
+                        </a>
+                    </span>
                 </a>
             </td>
         </tr>

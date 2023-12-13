@@ -2,12 +2,9 @@ package com.splitwiseapp.controller;
 
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.User;
-import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.UserRepository;
-import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -18,12 +15,10 @@ import java.util.List;
 
 @Controller
 @AllArgsConstructor
-public class UserMenuController {
+public class UserController {
 
     private final UserRepository userRepository;
     private final UserService userService;
-    private final EventService eventService;
-    private final EventRepository eventRepository;
 
     @GetMapping("/profile")
     public String userProfile(Model model) {
@@ -39,9 +34,10 @@ public class UserMenuController {
     }
 
     @GetMapping("/users")
-    public String users(Model model){
+    public String users(Model model) {
         List<User> users = userService.findAll();
         model.addAttribute("users", users);
         return "users";
     }
+
 }

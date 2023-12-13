@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,9 @@ public class EventController {
         model.addAttribute("events", events);
         return "events";
     }
-    @GetMapping("/events/{id}")
-    public String eventDetails(@PathVariable("id") Integer id,Model model) {
-        Event event = eventService.findById(id);
+    @GetMapping("/events/{eventId}")
+    public String eventDetails(@PathVariable("eventId") Integer eventId,Model model) {
+        Event event = eventService.findById(eventId);
 
         model.addAttribute("event", event);
         return "event";
@@ -80,19 +81,15 @@ public class EventController {
         return "redirect:/events";
     }
 
-    @GetMapping("/events/{id}/users")
-    public String showEventDetails(@PathVariable("id") Integer id, Model model) {
-        Event event = eventService.findById(id);
+    @GetMapping("/events/{eventId}/users")
+    public String showEventUsers(@PathVariable("eventId") Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventUsers = event.getEventUsers();
         List<User> remainingUsers = new ArrayList<>();
-        List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(id);
+        List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
         model.addAttribute("event", event);
-
-        if (eventUsers.isEmpty()) {
-            return "redirect:/events/" + id + "/addUsers";
-        }
 
         for (User u: allUsers)
         {
@@ -101,12 +98,37 @@ public class EventController {
             }
         }
 
-        model.addAttribute("add_id", id);
-        model.addAttribute("remove_id", id);
+        model.addAttribute("add_id", eventId);
+        model.addAttribute("remove_id", eventId);
         model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
         return "users";
+    }
+
+    @GetMapping("/events/{eventId}/expenses")
+    public String showEventExpenses(@PathVariable("eventId") Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
+        List<User> allUsers = userService.findAll();
+        List<User> eventUsers = event.getEventUsers();
+        List<User> remainingUsers = new ArrayList<>();
+        List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
+
+        model.addAttribute("event", event);
+
+        for (User u: allUsers)
+        {
+            if (!eventUsers.contains(u)) {
+                remainingUsers.add(u);
+            }
+        }
+
+        model.addAttribute("add_id", eventId);
+        model.addAttribute("remove_id", eventId);
+        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("remainingUsers", remainingUsers);
+        model.addAttribute("eventExpenses", eventExpenses);
+        return "expenses";
     }
 
     @GetMapping("/events/{eventId}/addUser")
@@ -150,6 +172,22 @@ public class EventController {
         eventService.save(event);
         expense.removeEvent();
         expenseService.saveExpense(expense);
+        return "redirect:/events/" + eventId + "/expenses";
+    }
+
+    @GetMapping("/events/{eventId}/users/{userId}")
+    public String assignPaidOffAmount(@PathVariable("eventId") Integer eventId,
+                                   @PathVariable("userId") Integer userId,
+                                   @RequestParam("paidOffAmount") String paidOffAmount) {
+        BigDecimal paidOffFromInput = paidOffAmount == null
+                ? BigDecimal.ZERO
+                : new BigDecimal(paidOffAmount.replaceAll(",", "."));
+
+        User user = userService.findById(userId);
+        user.setPaidOffAmount(paidOffFromInput);
+        user.setBalance(paidOffFromInput.subtract(user.getUserDebt()));
+        userService.save(user);
+
         return "redirect:/events/" + eventId + "/expenses";
     }
 

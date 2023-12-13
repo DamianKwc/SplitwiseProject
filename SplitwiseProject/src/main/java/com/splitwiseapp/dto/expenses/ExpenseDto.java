@@ -14,7 +14,10 @@ public class ExpenseDto {
     private String name;
 
     @NotEmpty
-    private String amount;
+    private String cost;
+
+    @NotEmpty
+    private String paidOffAmount;
 
     @NotEmpty
     private String participantUsername;

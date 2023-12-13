@@ -28,8 +28,8 @@ public class Expense {
     private String name;
 
     @JsonIgnore
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+    @Column(name = "cost", nullable = false)
+    private BigDecimal cost;
 
     @JsonIgnore
     @Column(name = "equal_split")

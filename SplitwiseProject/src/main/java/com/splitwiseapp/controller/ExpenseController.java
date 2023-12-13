@@ -50,7 +50,15 @@ public class ExpenseController {
                                 BindingResult result,
                                 Model model) {
         Set<User> participants = getUsers(expenseDto);
-        BigDecimal amount = new BigDecimal(expenseDto.getAmount().replaceAll(",", "."));
+        BigDecimal cost = expenseDto.getCost() == null
+                ? BigDecimal.ZERO
+                : new BigDecimal(expenseDto.getCost().replaceAll(",", "."));
+        BigDecimal paidOffAmount = expenseDto.getPaidOffAmount() == null
+                ? BigDecimal.ZERO
+                : new BigDecimal(expenseDto.getPaidOffAmount().replaceAll(",", "."));
+        BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, participants.size());
+
+        model.addAttribute("costParticipants", participants);
 
         if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
             result.rejectValue("name", null,
@@ -58,20 +66,26 @@ public class ExpenseController {
         }
         if (result.hasErrors()) {
             model.addAttribute("expenses", expenseDto);
-            return "redirect:/events/{id}/users";
+            return "redirect:/events/{id}/expenses";
         }
+
+        participants.forEach(user -> {
+            user.setUserDebt(costPerParticipant);
+            user.setPaidOffAmount(paidOffAmount);
+            user.setBalance(BigDecimal.ZERO.subtract(costPerParticipant));
+        });
 
         Expense expense = Expense.builder()
                 .name(expenseDto.getName())
-                .amount(amount)
-                .equalSplit(expenseService.splitCostEquallyPerParticipants(amount, participants.size()))
+                .cost(cost)
+                .equalSplit(costPerParticipant)
                 .event(eventService.findById(id))
                 .participants(participants)
                 .build();
 
         expenseService.saveExpense(expense);
 
-        return "redirect:/events/" + id + "/users";
+        return "redirect:/events/" + id + "/expenses";
     }
 
     @GetMapping("/expenses/{expenseId}/addUser")

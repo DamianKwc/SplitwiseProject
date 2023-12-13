@@ -31,52 +31,11 @@
         </div>
     </div>
 </nav>
-<div class="row">
-    <h2 th:text="'Details of Event: ' + ${event.eventName}"></h2>
-</div>
 <div class="container">
     <div class="row col-md-10">
         <div class="card">
             <div class="card-body">
-                <h2>Expenses in this event</h2>
-
-                <a th:href="@{'/events/' + ${id} + '/newExpense'}" class="btn btn-primary">
-                    Create Expense
-                </a>
-                <br>
-                <br>
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>Expense Name</th>
-                        <th>Total cost</th>
-                        <th>Expense participants</th>
-                        <th>Cost per participant</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="expense : ${eventExpenses}">
-                        <td th:text="${expense.name}"></td>
-                        <td th:text="${expense.amount}"></td>
-                        <td>
-                            <p th:each="participant : ${expense.participants}">
-                                <span th:text="${participant.username}"></span>
-                            </p>
-                        </td>
-                        <td th:text="${expense.equalSplit}"> </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-            </div>
-        </div>
-    </div>
-</div>
-<div class="container">
-    <div class="row col-md-10">
-        <div class="card">
-            <div class="card-body">
-                <h2>Participants</h2>
+                <h2 th:text="'Participants of Event: ' + ${event.eventName}"></h2>
 
                 <div class="col-md-12">
                     <div id="usersModal" class="modal fade bg-dark" role="dialog">
@@ -117,6 +76,9 @@
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usersModal">
                         Add event participant
                     </button>
+                    <a th:href="@{'/events'}" class="btn btn-secondary">
+                        Back to Events List
+                    </a>
                 </div>
             </div>
 
@@ -141,12 +103,7 @@
                 </tr>
                 </tbody>
             </table>
-
         </div>
-        <a th:href="@{'/events'}"
-           class="btn btn-secondary">
-            Back to Events List
-        </a>
     </div>
 </div>
 
