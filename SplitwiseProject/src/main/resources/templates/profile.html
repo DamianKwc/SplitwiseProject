@@ -26,27 +26,15 @@
                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
                 </li>
             </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item ms-auto">
+                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
-<div class="container">
-    <div class="row col-md-10">
-        <h2>Logged in</h2>
-    </div>
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>First Name</th>
-            <th>Username</th>
-        </tr>
-        </thead>
-        <tbody>
-            <td th:text = "${user.firstName}"></td>
-            <td th:text = "${user.username}"></td>
-        </tbody>
-    </table>
-</div>
-
+<br>
 <div class="container">
 <table class="table table-bordered table-hover">
     <thead class="table-dark">
