@@ -44,6 +44,13 @@ public class ExpenseController {
         return "new-expense";
     }
 
+    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
+    public String deleteExpense(@PathVariable Integer expenseId,
+                                @PathVariable Integer eventId) {
+        expenseService.deleteById(expenseId);
+        return "redirect:/events/" + eventId + "/expenses";
+    }
+
     @PostMapping("/events/{id}/saveExpense")
     public String createExpense(@ModelAttribute("expenses") ExpenseDto expenseDto,
                                 @PathVariable Integer id,

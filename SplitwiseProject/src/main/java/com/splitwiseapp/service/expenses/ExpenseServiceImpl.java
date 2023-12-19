@@ -46,4 +46,9 @@ public class ExpenseServiceImpl implements ExpenseService {
     public BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber) {
         return amount.divide(BigDecimal.valueOf(participantsNumber),2, RoundingMode.CEILING);
     }
+
+    @Override
+    public void deleteById(Integer expenseId) {
+        expenseRepository.deleteById(expenseId);
+    }
 }

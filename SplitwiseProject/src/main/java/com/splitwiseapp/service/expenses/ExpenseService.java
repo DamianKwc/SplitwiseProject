@@ -12,4 +12,5 @@ public interface ExpenseService {
     List<Expense> findExpensesForGivenEvent(Integer eventId);
     void saveExpense(Expense expense);
     BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber);
+    void deleteById(Integer expenseId);
 }

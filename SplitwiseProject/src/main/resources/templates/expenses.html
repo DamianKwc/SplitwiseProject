@@ -54,6 +54,7 @@
                         <th>Cost per participant</th>
                         <th>Already paid off</th>
                         <th>Balance</th>
+                        <th>Delete</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -87,6 +88,12 @@
                                       th:style="${participant.balance} < 0 ? 'color: red' : 'color: green'">
                                 </span>
                             </p>
+                        </td>
+                        <td>
+                            <a th:href="@{/events/{eventId}/expenses/{expenseId}/delete(eventId=${eventId}, expenseId=${expense.id})}"
+                               class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure?'))) return false">
+                                Delete
+                            </a>
                         </td>
                     </tr>
                     </tbody>
