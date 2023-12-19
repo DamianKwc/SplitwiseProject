@@ -37,7 +37,6 @@ public class SecurityConfig {
                 ).formLogin(
                         form -> form
                                 .loginPage("/login")
-                                .loginProcessingUrl("/login")
                                 .defaultSuccessUrl("/profile")
                                 .permitAll()
                 ).logout(
@@ -54,6 +53,6 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
     }
-    }
+}
 
 
