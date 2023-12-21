@@ -1,8 +1,10 @@
 package com.splitwiseapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +26,10 @@ public class Event {
 
     @Column(name = "event_name", unique = true)
     private String eventName;
+
+    @JsonIgnore
+    @Column(name = "eventBalance")
+    private BigDecimal eventBalance;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})

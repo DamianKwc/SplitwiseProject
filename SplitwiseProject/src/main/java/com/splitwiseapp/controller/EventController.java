@@ -175,22 +175,6 @@ public class EventController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @GetMapping("/events/{eventId}/users/{userId}")
-    public String assignPaidOffAmount(@PathVariable("eventId") Integer eventId,
-                                   @PathVariable("userId") Integer userId,
-                                   @RequestParam("paidOffAmount") String paidOffAmount) {
-        BigDecimal paidOffFromInput = paidOffAmount == null
-                ? BigDecimal.ZERO
-                : new BigDecimal(paidOffAmount.replaceAll(",", "."));
-
-        User user = userService.findById(userId);
-        user.setPaidOffAmount(paidOffFromInput);
-        user.setBalance(paidOffFromInput.subtract(user.getUserDebt()));
-        userService.save(user);
-
-        return "redirect:/events/" + eventId + "/expenses";
-    }
-
     private boolean doesEventWithGivenNameAlreadyExist(EventDto eventDto) {
         Event event = eventService.findByEventName(eventDto.getEventName());
         return event != null && !StringUtils.isBlank(event.getEventName());

@@ -28,8 +28,11 @@ public class UserController {
 
         List<Event> userEvents = loggedInUser.getUserEvents();
 
+
         model.addAttribute("userEvents", userEvents);
         model.addAttribute("user", loggedInUser);
+        model.addAttribute("userBalance", loggedInUser.getBalance());
+
         return "profile";
     }
 

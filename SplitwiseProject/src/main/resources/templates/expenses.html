@@ -62,16 +62,15 @@
                         <td th:text="${expense.name}"></td>
                         <td th:text="${expense.cost}"></td>
                         <td>
-                            <div th:each="participant : ${expense.participants}"
-                                 th:with="singleParticipant = ${participant}">
+                            <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
                                 <p>
                                     <span th:text="${singleParticipant.username}"></span>
                                     <span>
-                                    <button class="btn btn-primary btn-sm float-end" data-bs-toggle="modal"
-                                            data-bs-target="#paidOffModal">
-                                        Add paid off amount
-                                    </button>
-                                </span>
+                                        <button class="btn btn-primary btn-sm float-end" data-bs-toggle="modal"
+                                                th:data-bs-target="'#paidOffModal-' + ${singleParticipant.id}">
+                                            Add paid off amount
+                                        </button>
+                                    </span>
                                 </p>
                             </div>
                         </td>
@@ -99,13 +98,11 @@
                     </tbody>
                 </table>
 
-
                 <div th:each="expense : ${eventExpenses}">
-                    <div th:each="participant : ${expense.participants}"
-                         th:with="singleParticipant = ${participant}">
+                    <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
 
                         <div class="col-md-12">
-                            <div id="paidOffModal" class="modal fade bg-dark" role="dialog">
+                            <div th:id="'paidOffModal-' + ${singleParticipant.id}" class="modal fade bg-dark" role="dialog">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -149,7 +146,6 @@
 
                     </div>
                 </div>
-
 
             </div>
         </div>

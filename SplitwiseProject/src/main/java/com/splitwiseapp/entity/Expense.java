@@ -32,6 +32,14 @@ public class Expense {
     private BigDecimal cost;
 
     @JsonIgnore
+    @Column(name = "paid_off_amount")
+    private BigDecimal paidOffAmount;
+
+    @JsonIgnore
+    @Column(name = "expenseBalance")
+    private BigDecimal expenseBalance;
+
+    @JsonIgnore
     @Column(name = "equal_split")
     private BigDecimal equalSplit;
 
