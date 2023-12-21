@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -28,12 +29,8 @@ public class Expense {
     private String name;
 
     @JsonIgnore
-    @Column(name = "cost", nullable = false)
-    private BigDecimal cost;
-
-    @JsonIgnore
-    @Column(name = "paid_off_amount")
-    private BigDecimal paidOffAmount;
+    @Column(name = "expense_cost", nullable = false)
+    private BigDecimal totalCost;
 
     @JsonIgnore
     @Column(name = "expenseBalance")
@@ -57,6 +54,9 @@ public class Expense {
     )
     @Builder.Default
     private Set<User> participants = new HashSet<>();
+
+    @OneToMany(mappedBy = "expensePaid")
+    private List<Payoff> payoffs;
 
     public void addEvent(Event event) {
         setEvent(event);

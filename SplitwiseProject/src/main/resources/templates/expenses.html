@@ -60,9 +60,10 @@
                     <tbody>
                     <tr th:each="expense : ${eventExpenses}">
                         <td th:text="${expense.name}"></td>
-                        <td th:text="${expense.cost}"></td>
-                        <td>
-                            <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
+                        <td th:text="${expense.totalCost}"></td>
+                        <div th:each="participant : ${expense.participants}"
+                             th:with="singleParticipant = ${participant}">
+                            <td>
                                 <p>
                                     <span th:text="${singleParticipant.username}"></span>
                                     <span>
@@ -72,22 +73,25 @@
                                         </button>
                                     </span>
                                 </p>
-                            </div>
-                        </td>
-                        <td th:text="${expense.equalSplit}"></td>
-                        <td>
-                            <p th:each="participant : ${expense.participants}">
-                                <span th:text="${participant.paidOffAmount}"></span>
-                            </p>
-                        </td>
-                        <td>
-                            <p th:each="participant : ${expense.participants}">
-                                <span th:if="${participant.balance != null}"
-                                      th:text="${participant.balance}"
-                                      th:style="${participant.balance} < 0 ? 'color: red' : 'color: green'">
+
+                            </td>
+                            <td th:text="${expense.equalSplit}"></td>
+                            <div th:each="payoff : ${singleParticipant.payoffs}" th:with="singlePayoff = ${payoff}">
+                                <td>
+                                    <p>
+                                        <span th:text="${payoff.payoffAmount}"></span>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p>
+                                <span th:if="${expense.expenseBalance != null}"
+                                      th:text="${expense.expenseBalance}"
+                                      th:style="${expense.expenseBalance} < 0 ? 'color: red' : 'color: green'">
                                 </span>
-                            </p>
-                        </td>
+                                    </p>
+                                </td>
+                            </div>
+                        </div>
                         <td>
                             <a th:href="@{/events/{eventId}/expenses/{expenseId}/delete(eventId=${eventId}, expenseId=${expense.id})}"
                                class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure?'))) return false">
@@ -102,7 +106,8 @@
                     <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
 
                         <div class="col-md-12">
-                            <div th:id="'paidOffModal-' + ${singleParticipant.id}" class="modal fade bg-dark" role="dialog">
+                            <div th:id="'paidOffModal-' + ${singleParticipant.id}" class="modal fade bg-dark"
+                                 role="dialog">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -122,7 +127,7 @@
                                                     <td th:text="${singleParticipant.firstName}"></td>
                                                     <td th:text="${singleParticipant.username}"></td>
                                                     <td>
-                                                        <form th:action="@{'/events/' + ${eventId} + '/users/' + ${singleParticipant.id}}">
+                                                        <form th:action="@{'/events/' + ${eventId} + '/expenses/' + ${expense.id} + '/users/' + ${singleParticipant.id}}">
                                                             <label for="paidOffAmount">
                                                                 Enter how much you've already paid off
                                                             </label>

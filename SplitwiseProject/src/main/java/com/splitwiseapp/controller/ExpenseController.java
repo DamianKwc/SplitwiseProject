@@ -3,6 +3,7 @@ package com.splitwiseapp.controller;
 import com.splitwiseapp.dto.expenses.ExpenseDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
+import com.splitwiseapp.entity.Payoff;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
@@ -60,9 +61,6 @@ public class ExpenseController {
         BigDecimal cost = expenseDto.getCost() == null
                 ? BigDecimal.ZERO
                 : new BigDecimal(expenseDto.getCost().replaceAll(",", "."));
-        BigDecimal paidOffAmount = expenseDto.getPaidOffAmount() == null
-                ? BigDecimal.ZERO
-                : new BigDecimal(expenseDto.getPaidOffAmount().replaceAll(",", "."));
         BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, participants.size());
 
         model.addAttribute("costParticipants", participants);
@@ -78,13 +76,12 @@ public class ExpenseController {
 
         participants.forEach(user -> {
             user.setUserDebt(costPerParticipant);
-            user.setPaidOffAmount(paidOffAmount);
             user.setBalance(BigDecimal.ZERO.subtract(costPerParticipant));
         });
 
         Expense expense = Expense.builder()
                 .name(expenseDto.getName())
-                .cost(cost)
+                .totalCost(cost)
                 .equalSplit(costPerParticipant)
                 .event(eventService.findById(id))
                 .participants(participants)
@@ -117,18 +114,35 @@ public class ExpenseController {
         return "redirect:/expenses/" + expenseId + "/users";
     }
 
-    @GetMapping("/events/{eventId}/users/{userId}")
+    @GetMapping("/events/{eventId}/expenses/{expenseId}/users/{userId}")
     public String assignPaidOffAmount(@PathVariable("eventId") Integer eventId,
+                                      @PathVariable("expenseId") Integer expenseId,
                                       @PathVariable("userId") Integer userId,
                                       @RequestParam("paidOffAmount") String paidOffAmount) {
         BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO
                 : new BigDecimal(paidOffAmount.replaceAll(",", "."));
 
-        User user = userService.findById(userId);
-        user.setPaidOffAmount(paidOffFromInput);
-        user.setBalance(paidOffFromInput.subtract(user.getUserDebt()));
-        userService.save(user);
+        Expense foundExpense = expenseService.findById(expenseId);
+        User foundUser = userService.findById(userId);
+        if (foundExpense.getTotalCost() != null) {
+            foundExpense.setExpenseBalance(paidOffFromInput.subtract(foundExpense.getTotalCost()));
+        }
+        foundExpense.setPayoffs(List.of(
+                Payoff.builder()
+                        .expensePaid(foundExpense)
+                        .userPaying(foundUser)
+                        .payoffAmount(paidOffFromInput)
+                        .build()
+        ));
+        expenseService.saveExpense(foundExpense);
+
+        if (foundUser.getBalance() == null) {
+            foundUser.setBalance(BigDecimal.ZERO);
+        } else {
+            foundUser.setBalance(foundUser.getBalance().add(paidOffFromInput));
+        }
+        userService.save(foundUser);
 
         return "redirect:/events/" + eventId + "/expenses";
     }

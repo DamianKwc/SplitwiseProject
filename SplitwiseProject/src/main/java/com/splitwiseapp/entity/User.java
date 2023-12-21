@@ -36,10 +36,6 @@ public class User {
     private BigDecimal userDebt;
 
     @JsonIgnore
-    @Column(name = "paid_off_amount")
-    private BigDecimal paidOffAmount;
-
-    @JsonIgnore
     @Column(name = "balance")
     private BigDecimal balance;
 
@@ -60,6 +56,9 @@ public class User {
             CascadeType.DETACH, CascadeType.REFRESH})
     @Builder.Default
     private List<Expense> expenses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "userPaying")
+    private List<Payoff> payoffs;
 
     public void addEvent(Event event) {
         this.userEvents.add(event);
