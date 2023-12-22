@@ -19,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,22 +120,25 @@ public class ExpenseController {
                                       @PathVariable("expenseId") Integer expenseId,
                                       @PathVariable("userId") Integer userId,
                                       @RequestParam("paidOffAmount") String paidOffAmount) {
+
+        List<Payoff> payoffs = new ArrayList<>();
+        Expense foundExpense = expenseService.findById(expenseId);
+        User foundUser = userService.findById(userId);
+
         BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO
                 : new BigDecimal(paidOffAmount.replaceAll(",", "."));
 
-        Expense foundExpense = expenseService.findById(expenseId);
-        User foundUser = userService.findById(userId);
+        payoffs.add(Payoff.builder()
+                .expensePaid(foundExpense)
+                .userPaying(foundUser)
+                .payoffAmount(paidOffFromInput)
+                .build());
+
         if (foundExpense.getTotalCost() != null) {
             foundExpense.setExpenseBalance(paidOffFromInput.subtract(foundExpense.getTotalCost()));
         }
-        foundExpense.setPayoffs(List.of(
-                Payoff.builder()
-                        .expensePaid(foundExpense)
-                        .userPaying(foundUser)
-                        .payoffAmount(paidOffFromInput)
-                        .build()
-        ));
+        foundExpense.setPayoffs(payoffs);
         expenseService.saveExpense(foundExpense);
 
         if (foundUser.getBalance() == null) {
