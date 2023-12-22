@@ -78,8 +78,14 @@ public class ExpenseController {
         }
 
         participants.forEach(user -> {
-            user.setUserDebt(costPerParticipant);
-            user.setBalance(BigDecimal.ZERO.subtract(costPerParticipant));
+            BigDecimal userDebt = userService.calculateUserDebt(user.getId()).add(costPerParticipant);
+            user.setUserDebt(userDebt);
+
+            if (user.getExpenses().isEmpty()) {
+                user.setBalance(userDebt.negate());
+            }
+
+            userService.save(user);
         });
 
         Expense expense = Expense.builder()
@@ -143,13 +149,7 @@ public class ExpenseController {
             foundExpense.setExpenseBalance(paidOffFromInput.subtract(foundExpense.getTotalCost()));
         }
         foundExpense.setPayoffs(payoffs);
-
-
-        if (foundUser.getBalance() == null) {
-            foundUser.setBalance(BigDecimal.ZERO);
-        } else {
-            foundUser.setBalance(foundUser.getBalance().add(paidOffFromInput));
-        }
+        foundUser.setBalance(userService.calculateUserBalance(userId, paidOffFromInput));
 
         userService.save(foundUser);
         expenseService.saveExpense(foundExpense);

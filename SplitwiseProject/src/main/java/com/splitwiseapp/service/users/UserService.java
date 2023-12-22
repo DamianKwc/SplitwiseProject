@@ -4,6 +4,7 @@ import com.splitwiseapp.dto.users.UserDto;
 import com.splitwiseapp.entity.User;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -16,4 +17,6 @@ public interface UserService{
     List<User> findAll();
     User save(User user);
     User getCurrentlyLoggedInUser();
+    BigDecimal calculateUserDebt(Integer userId);
+    BigDecimal calculateUserBalance(Integer userId, BigDecimal paidOffAmount);
 }
