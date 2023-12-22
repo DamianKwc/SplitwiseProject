@@ -10,6 +10,7 @@ import com.splitwiseapp.repository.ExpenseRepository;
 import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
+import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ public class ExpenseController {
     private final UserRepository userRepository;
     private final ExpenseService expenseService;
     private final ExpenseRepository expenseRepository;
+    private final PayoffService payoffService;
 
     @GetMapping("/events/{eventId}/newExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
@@ -129,24 +131,29 @@ public class ExpenseController {
                 ? BigDecimal.ZERO
                 : new BigDecimal(paidOffAmount.replaceAll(",", "."));
 
-        payoffs.add(Payoff.builder()
+        Payoff payoff = Payoff.builder()
                 .expensePaid(foundExpense)
                 .userPaying(foundUser)
                 .payoffAmount(paidOffFromInput)
-                .build());
+                .build();
+
+        payoffs.add(payoff);
 
         if (foundExpense.getTotalCost() != null) {
             foundExpense.setExpenseBalance(paidOffFromInput.subtract(foundExpense.getTotalCost()));
         }
         foundExpense.setPayoffs(payoffs);
-        expenseService.saveExpense(foundExpense);
+
 
         if (foundUser.getBalance() == null) {
             foundUser.setBalance(BigDecimal.ZERO);
         } else {
             foundUser.setBalance(foundUser.getBalance().add(paidOffFromInput));
         }
+
         userService.save(foundUser);
+        expenseService.saveExpense(foundExpense);
+        payoffService.savePayoff(payoff);
 
         return "redirect:/events/" + eventId + "/expenses";
     }
