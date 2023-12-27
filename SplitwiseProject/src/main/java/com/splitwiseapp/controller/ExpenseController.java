@@ -76,7 +76,8 @@ public class ExpenseController {
                 .equalSplit(costPerParticipant)
                 .event(eventService.findById(id))
                 .participants(expenseParticipants)
-                .userPerPayoffAmount(new HashMap<>())
+                .payoffAmountPerUser(new HashMap<>())
+                .balancePerUser(new HashMap<>())
                 .build();
 
         Payoff defaultPayoff = Payoff.builder()

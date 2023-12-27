@@ -77,17 +77,17 @@
                         </td>
                         <td th:text="${expense.equalSplit}"></td>
                         <td>
-                            <div th:each="entry : ${expense.userPerPayoffAmount}">
+                            <div th:each="entry : ${expense.payoffAmountPerUser}">
                                 <p>
                                     <span th:text="${entry.value}"></span>
                                 </p>
                             </div>
                         </td>
                         <td>
-                            <p th:each="participant : ${expense.participants}">
-                                <span th:if="${participant.balance != null}"
-                                      th:text="${participant.balance}"
-                                      th:style="${participant.balance} < 0 ? 'color: red' : 'color: green'">
+                            <p th:each="entry : ${expense.balancePerUser}">
+                                <span th:if="${entry.value != null}"
+                                      th:text="${entry.value}"
+                                      th:style="${entry.value} < 0 ? 'color: red' : 'color: green'">
                                 </span>
                             </p>
                         </td>

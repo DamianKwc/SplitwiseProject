@@ -116,8 +116,10 @@ public class EventController {
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
         for (Expense expense : eventExpenses) {
-            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapExpenseToUserPayoffAmount(expense);
-            expense.setUserPerPayoffAmount(payoffAmountPerParticipant);
+            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
+            Map<Integer, BigDecimal> balancePerParticipant = expenseService.mapUserToBalance(expense);
+            expense.setPayoffAmountPerUser(payoffAmountPerParticipant);
+            expense.setBalancePerUser(balancePerParticipant);
         }
 
         for (User u: allUsers)

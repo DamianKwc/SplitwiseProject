@@ -14,5 +14,6 @@ public interface ExpenseService {
     void saveExpense(Expense expense);
     BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber);
     void deleteById(Integer expenseId);
-    Map<Integer, BigDecimal> mapExpenseToUserPayoffAmount(Expense expense);
+    Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense);
+    Map<Integer, BigDecimal> mapUserToBalance(Expense expense);
 }

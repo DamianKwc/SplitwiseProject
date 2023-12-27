@@ -39,7 +39,11 @@ public class Expense {
 
     @Transient
     @Builder.Default
-    private Map<Integer, BigDecimal> userPerPayoffAmount = new HashMap<>();
+    private Map<Integer, BigDecimal> payoffAmountPerUser = new HashMap<>();
+
+    @Transient
+    @Builder.Default
+    private Map<Integer, BigDecimal> balancePerUser = new HashMap<>();
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})

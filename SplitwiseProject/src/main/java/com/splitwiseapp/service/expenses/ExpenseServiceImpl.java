@@ -57,14 +57,21 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Map<Integer, BigDecimal> mapExpenseToUserPayoffAmount(Expense expense) {
-        Map<Integer, BigDecimal> mapPayoffsAmountPerUser = new HashMap<>();
+    public Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense) {
+        Map<Integer, BigDecimal> mapUserPerPayoffsAmount = new HashMap<>();
+        expense.getParticipants().forEach(participant -> mapUserPerPayoffsAmount.put(participant.getId(),
+                sumParticipantPayoffs(expense, participant)
+        ));
+        return mapUserPerPayoffsAmount;
+    }
 
-            expense.getParticipants().forEach(participant -> mapPayoffsAmountPerUser.put(participant.getId(),
-                    sumParticipantPayoffs(expense, participant)
-                ));
-
-        return mapPayoffsAmountPerUser;
+    @Override
+    public Map<Integer, BigDecimal> mapUserToBalance(Expense expense) {
+        Map<Integer, BigDecimal> mapUserPerBalance = new HashMap<>();
+        expense.getParticipants().forEach(participant -> mapUserPerBalance.put(participant.getId(),
+                calculateParticipantBalance(expense, participant)
+        ));
+        return mapUserPerBalance;
     }
 
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
@@ -72,5 +79,10 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
                 .map(Payoff::getPayoffAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
+        BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
+        return payoffsSum.subtract(expense.getEqualSplit());
     }
 }
