@@ -14,7 +14,6 @@ import java.util.Set;
 @Builder
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
@@ -63,5 +62,16 @@ public class Event {
 
     public void removeExpense(Expense expense) {
         this.expenses.remove(expense);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "eventName='" + eventName + '\'' +
+                ", eventBalance=" + eventBalance +
+                ", owner=" + owner.getFirstName() +
+                ", eventUsers=" + eventUsers +
+                ", expenses=" + expenses +
+                '}';
     }
 }

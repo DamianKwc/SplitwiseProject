@@ -68,7 +68,7 @@
                                     <span th:text="${singleParticipant.username}"></span>
                                     <span>
                                         <button class="btn btn-primary btn-sm float-end" data-bs-toggle="modal"
-                                                th:data-bs-target="'#paidOffModal-' + ${singleParticipant.id}">
+                                                th:data-bs-target="'#paidOffModal-' + ${expense.id} + ${singleParticipant.id}">
                                             Add paid off amount
                                         </button>
                                     </span>
@@ -77,9 +77,15 @@
                         </td>
                         <td th:text="${expense.equalSplit}"></td>
                         <td>
-                            <p th:each="participant : ${expense.participants}" th:with="payoffs = ${participant.payoffs}">
-                                <span th:text="${#aggregates.sum(payoffs.![payoffAmount])}"></span>
-                            </p>
+                            <div th:each="participant : ${expense.participants}"
+                                 th:with="singleParticipant = ${participant}">
+                                <div th:each="entry : ${expense.expenseToUserPayoffAmount}">
+                                    <p th:each="userAmount : ${entry.value}">
+                                        <span th:if="${entry.key == expense.id} and ${userAmount.key == singleParticipant.id}"
+                                              th:text="${userAmount.value}"></span>
+                                    </p>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <p th:each="participant : ${expense.participants}">
@@ -103,7 +109,7 @@
                     <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
 
                         <div class="col-md-12">
-                            <div th:id="'paidOffModal-' + ${singleParticipant.id}" class="modal fade bg-dark"
+                            <div th:id="'paidOffModal-' + ${expense.id} + ${singleParticipant.id}" class="modal fade bg-dark"
                                  role="dialog">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">

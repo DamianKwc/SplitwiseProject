@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -34,4 +33,13 @@ public class Payoff {
     @JsonIgnore
     @Column(name = "payoff_amount", nullable = false)
     private BigDecimal payoffAmount;
+
+    @Override
+    public String toString() {
+        return "Payoff{" +
+                "expensePaid= " + expensePaid.getName() +
+                ", userPaying= " + userPaying.getFirstName() +
+                ", payoffAmount=" + payoffAmount +
+                '}';
+    }
 }

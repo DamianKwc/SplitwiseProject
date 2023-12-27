@@ -7,12 +7,12 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
 @Setter
 @Builder
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -39,6 +39,9 @@ public class Expense {
     @JsonIgnore
     @Column(name = "equal_split")
     private BigDecimal equalSplit;
+
+    @Transient
+    private Map<Integer, Map<Integer, BigDecimal>> expenseToUserPayoffAmount;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
@@ -72,5 +75,18 @@ public class Expense {
 
     public void removeParticipant(User participant) {
         this.participants.remove(participant);
+    }
+
+    @Override
+    public String toString() {
+        return "Expense{" +
+                "name='" + name + '\'' +
+                ", totalCost=" + totalCost +
+                ", expenseBalance=" + expenseBalance +
+                ", equalSplit=" + equalSplit +
+                ", event=" + event.getEventName() +
+                ", participants=" + participants +
+                ", payoffs=" + payoffs +
+                '}';
     }
 }

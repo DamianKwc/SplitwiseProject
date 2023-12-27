@@ -15,8 +15,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @AllArgsConstructor
@@ -112,6 +114,8 @@ public class EventController {
         List<User> eventUsers = event.getEventUsers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
+        Map<Integer, Map<Integer, BigDecimal>> expensePayoffsToParticipants = expenseService.mapExpenseToUserPayoffAmount(eventExpenses);
+        model.addAttribute("expensePayoffsToParticipants", expensePayoffsToParticipants);
 
         model.addAttribute("event", event);
 
@@ -121,6 +125,9 @@ public class EventController {
                 remainingUsers.add(u);
             }
         }
+
+        System.out.println(expensePayoffsToParticipants);
+
 
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);

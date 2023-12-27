@@ -76,6 +76,19 @@ public class User {
         this.expenses.remove(expense);
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "firstName='" + firstName + '\'' +
+                ", username='" + username + '\'' +
+                ", userDebt=" + userDebt +
+                ", balance=" + balance +
+                ", roles=" + roles +
+                ", userEvents=" + userEvents +
+                ", expenses=" + expenses +
+                ", payoffs=" + payoffs +
+                '}';
+    }
 }
 
 
