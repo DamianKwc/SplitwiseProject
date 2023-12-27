@@ -76,6 +76,7 @@ public class ExpenseController {
                 .equalSplit(costPerParticipant)
                 .event(eventService.findById(id))
                 .participants(expenseParticipants)
+                .userPerPayoffAmount(new HashMap<>())
                 .build();
 
         Payoff defaultPayoff = Payoff.builder()
@@ -109,11 +110,6 @@ public class ExpenseController {
                                       @PathVariable("expenseId") Integer expenseId,
                                       @PathVariable("userId") Integer userId,
                                       @RequestParam("paidOffAmount") String paidOffAmount) {
-
-        System.out.println("Event id: " + eventId);
-        System.out.println("Expense id: " + expenseId);
-        System.out.println("User id: " + userId);
-
         Expense foundExpense = expenseService.findById(expenseId);
         User foundUser = userService.findById(userId);
 
@@ -133,8 +129,6 @@ public class ExpenseController {
         foundExpense.getPayoffs().add(payoff);
         foundUser.getPayoffs().add(payoff);
         foundUser.setBalance(userService.calculateUserBalance(userId, paidOffFromInput));
-
-        System.out.println("Payoff done: " + payoff);
 
         userService.save(foundUser);
         expenseService.saveExpense(foundExpense);

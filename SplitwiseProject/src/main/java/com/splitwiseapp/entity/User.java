@@ -83,10 +83,10 @@ public class User {
                 ", username='" + username + '\'' +
                 ", userDebt=" + userDebt +
                 ", balance=" + balance +
-                ", roles=" + roles +
-                ", userEvents=" + userEvents +
-                ", expenses=" + expenses +
-                ", payoffs=" + payoffs +
+                ", roles=" + roles.size() +
+                ", userEvents=" + userEvents.size() +
+                ", expenses=" + expenses.size() +
+                ", payoffs=" + payoffs.size() +
                 '}';
     }
 }

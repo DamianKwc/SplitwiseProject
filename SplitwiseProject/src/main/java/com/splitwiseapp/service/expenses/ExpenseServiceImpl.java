@@ -10,11 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -56,32 +57,20 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Map<Integer, Map<Integer, BigDecimal>> mapExpenseToUserPayoffAmount(List<Expense> eventExpenses) {
-        Map<Integer, Map<Integer, BigDecimal>> mapExpensePerUserAndPayoffAmount = new HashMap<>();
+    public Map<Integer, BigDecimal> mapExpenseToUserPayoffAmount(Expense expense) {
         Map<Integer, BigDecimal> mapPayoffsAmountPerUser = new HashMap<>();
 
-        eventExpenses.forEach(expense -> {
-                expense.getParticipants().forEach(participant -> mapPayoffsAmountPerUser.put(participant.getId(),
-                        expense.getPayoffs().stream()
-                                .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
-                                .filter(payoff -> expense.getId().equals(payoff.getExpensePaid().getId()))
-                                .map(Payoff::getPayoffAmount)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add)
+            expense.getParticipants().forEach(participant -> mapPayoffsAmountPerUser.put(participant.getId(),
+                    sumParticipantPayoffs(expense, participant)
                 ));
 
-                mapExpensePerUserAndPayoffAmount.put(expense.getId(), mapPayoffsAmountPerUser);
-                expense.setExpenseToUserPayoffAmount(mapExpensePerUserAndPayoffAmount);
-                expenseRepository.save(expense);
-        });
-
-        return mapExpensePerUserAndPayoffAmount;
+        return mapPayoffsAmountPerUser;
     }
 
-    private BigDecimal getPayoffsSumForParticipant(List<Payoff> payoffs, Integer expenseId) {
-        return payoffs.stream()
-                .filter(payoff -> expenseId.equals(payoff.getExpensePaid().getId()))
+    private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
+        return expense.getPayoffs().stream()
+                .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
                 .map(Payoff::getPayoffAmount)
-                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

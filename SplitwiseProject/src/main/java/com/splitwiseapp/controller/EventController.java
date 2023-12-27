@@ -114,10 +114,11 @@ public class EventController {
         List<User> eventUsers = event.getEventUsers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
-        Map<Integer, Map<Integer, BigDecimal>> expensePayoffsToParticipants = expenseService.mapExpenseToUserPayoffAmount(eventExpenses);
-        model.addAttribute("expensePayoffsToParticipants", expensePayoffsToParticipants);
 
-        model.addAttribute("event", event);
+        for (Expense expense : eventExpenses) {
+            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapExpenseToUserPayoffAmount(expense);
+            expense.setUserPerPayoffAmount(payoffAmountPerParticipant);
+        }
 
         for (User u: allUsers)
         {
@@ -126,9 +127,7 @@ public class EventController {
             }
         }
 
-        System.out.println(expensePayoffsToParticipants);
-
-
+        model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
         model.addAttribute("eventUsers", eventUsers);

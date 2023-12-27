@@ -77,14 +77,10 @@
                         </td>
                         <td th:text="${expense.equalSplit}"></td>
                         <td>
-                            <div th:each="participant : ${expense.participants}"
-                                 th:with="singleParticipant = ${participant}">
-                                <div th:each="entry : ${expense.expenseToUserPayoffAmount}">
-                                    <p th:each="userAmount : ${entry.value}">
-                                        <span th:if="${entry.key == expense.id} and ${userAmount.key == singleParticipant.id}"
-                                              th:text="${userAmount.value}"></span>
-                                    </p>
-                                </div>
+                            <div th:each="entry : ${expense.userPerPayoffAmount}">
+                                <p>
+                                    <span th:text="${entry.value}"></span>
+                                </p>
                             </div>
                         </td>
                         <td>
@@ -109,7 +105,8 @@
                     <div th:each="participant : ${expense.participants}" th:with="singleParticipant = ${participant}">
 
                         <div class="col-md-12">
-                            <div th:id="'paidOffModal-' + ${expense.id} + ${singleParticipant.id}" class="modal fade bg-dark"
+                            <div th:id="'paidOffModal-' + ${expense.id} + ${singleParticipant.id}"
+                                 class="modal fade bg-dark"
                                  role="dialog">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">

@@ -5,10 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -41,7 +38,8 @@ public class Expense {
     private BigDecimal equalSplit;
 
     @Transient
-    private Map<Integer, Map<Integer, BigDecimal>> expenseToUserPayoffAmount;
+    @Builder.Default
+    private Map<Integer, BigDecimal> userPerPayoffAmount = new HashMap<>();
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH})
