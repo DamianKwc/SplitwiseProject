@@ -60,7 +60,7 @@ public class Expense {
     @Builder.Default
     private Set<User> participants = new HashSet<>();
 
-    @OneToMany(mappedBy = "expensePaid")
+    @OneToMany(mappedBy = "expensePaid", cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;
 
     public void addEvent(Event event) {

@@ -129,12 +129,17 @@ public class EventController {
             }
         }
 
+        BigDecimal updatedBalance = calculateUpdatedBalanceForEvent(eventExpenses);
+        event.setEventBalance(updatedBalance);
+        eventService.save(event);
+
         model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
         model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
+        model.addAttribute("updatedBalance", updatedBalance);
         return "expenses";
     }
 
@@ -185,6 +190,12 @@ public class EventController {
     private boolean doesEventWithGivenNameAlreadyExist(EventDto eventDto) {
         Event event = eventService.findByEventName(eventDto.getEventName());
         return event != null && !StringUtils.isBlank(event.getEventName());
+    }
+
+    private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
+        return eventExpenses.stream()
+                .flatMap(expense -> expense.getBalancePerUser().values().stream())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
 }

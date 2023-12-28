@@ -45,7 +45,8 @@ public class Event {
     @Builder.Default
     private List<User> eventUsers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH})
     private Set<Expense> expenses;
 
     public void addUser(User user) {
