@@ -1,10 +1,7 @@
 package com.splitwiseapp.controller;
 
 import com.splitwiseapp.dto.expenses.ExpenseDto;
-import com.splitwiseapp.entity.Event;
-import com.splitwiseapp.entity.Expense;
-import com.splitwiseapp.entity.Payoff;
-import com.splitwiseapp.entity.User;
+import com.splitwiseapp.entity.*;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
 import com.splitwiseapp.repository.UserRepository;
@@ -63,7 +60,7 @@ public class ExpenseController {
         String username = authentication.getName();
         User loggedInUser = userRepository.findByUsername(username);
 
-        Set<User> expenseParticipants = getUsers(expenseDto);
+        TreeSet<User> expenseParticipants = getUsers(expenseDto);
         List<Payoff> expensePayoffs = new ArrayList<>();
         BigDecimal cost = expenseDto.getCost() == null
                 ? BigDecimal.ZERO
@@ -160,8 +157,8 @@ public class ExpenseController {
         return "redirect:/expenses/" + expenseId + "/users";
     }
 
-    private Set<User> getUsers(ExpenseDto expenseDto) {
-        Set<User> participants = new HashSet<>();
+    private TreeSet<User> getUsers(ExpenseDto expenseDto) {
+        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
         for (String username : splitUsernames) {
             User foundUser = userService.findByUsername(username);

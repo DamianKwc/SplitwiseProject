@@ -15,7 +15,7 @@ public interface EventService {
     List<Event> findAllEvents();
     void saveEvent(Event event);
     Event findById(@NotEmpty Integer eventId);
-    Event findByEventName(@NotEmpty String eventName);
+    Event findByEventName(String eventName);
     void deleteById(Integer eventId);
     Event save(Event event);
 

@@ -8,11 +8,13 @@ import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -44,24 +46,32 @@ public class EventController {
 
     @GetMapping("/newEvent")
     public String showEventAddingForm(Model model){
+
         List<UserDto> allUsers = userService.findAllUsers();
+
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
         return "new-event";
     }
 
-    @PostMapping("/saveEvent")
-    public String addEvent(@ModelAttribute("events") EventDto eventDto,
-                           BindingResult result,
-                           Model model) {
+    @PostMapping("/newEvent")
+    public String addEvent(@ModelAttribute("newEvent") EventDto eventDto,
+                           BindingResult result) {
 
-        if (doesEventWithGivenNameAlreadyExist(eventDto)) {
-            result.rejectValue("eventName", null,
-                    "That event already exists or given name is incorrect.");
+        Event existingEvent = eventService.findByEventName(eventDto.getEventName());
+
+        if(existingEvent != null && existingEvent.getEventName() != null && !existingEvent.getEventName().isEmpty()){
+            result.addError(new FieldError("newEvent", "eventName",
+                    "Event '" +  existingEvent.getEventName() + "' already exists." ));
         }
+
+        if (eventDto.getEventName().isBlank()) {
+            result.addError(new FieldError("newEvent", "eventName",
+                    "Event name field cannot be empty." ));
+        }
+
         if (result.hasErrors()) {
-            model.addAttribute("events", eventDto);
-            return "redirect:/events";
+            return "new-event";
         }
 
         Event event = Event.builder()
@@ -72,7 +82,6 @@ public class EventController {
         event.addUser(userService.getCurrentlyLoggedInUser());
         event.setOwner(userService.getCurrentlyLoggedInUser());
         eventService.saveEvent(event);
-
         return "redirect:/events";
     }
 
@@ -185,11 +194,6 @@ public class EventController {
         expense.removeEvent();
         expenseService.saveExpense(expense);
         return "redirect:/events/" + eventId + "/expenses";
-    }
-
-    private boolean doesEventWithGivenNameAlreadyExist(EventDto eventDto) {
-        Event event = eventService.findByEventName(eventDto.getEventName());
-        return event != null && !StringUtils.isBlank(event.getEventName());
     }
 
     private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {

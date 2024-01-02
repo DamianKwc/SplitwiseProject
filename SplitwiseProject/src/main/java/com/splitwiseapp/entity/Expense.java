@@ -58,7 +58,7 @@ public class Expense {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private Set<User> participants = new HashSet<>();
+    private Set<User> participants = new TreeSet<>();
 
     @OneToMany(mappedBy = "expensePaid", cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;
@@ -78,6 +78,7 @@ public class Expense {
     public void removeParticipant(User participant) {
         this.participants.remove(participant);
     }
+
 
     @Override
     public String toString() {
