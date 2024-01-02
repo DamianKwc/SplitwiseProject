@@ -11,6 +11,7 @@ import com.splitwiseapp.service.users.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,15 +32,18 @@ public class EventController {
     private final ExpenseService expenseService;
 
     @GetMapping("/events")
-    public String events(Model model) {
+    public String events(Model model, Authentication authentication) {
         List<Event> events = eventService.findAllEvents();
+
         model.addAttribute("events", events);
+        model.addAttribute("loggedInUser", authentication.getName());
+
         return "events";
     }
+
     @GetMapping("/events/{eventId}")
     public String eventDetails(@PathVariable("eventId") Integer eventId,Model model) {
         Event event = eventService.findById(eventId);
-
         model.addAttribute("event", event);
         return "event";
     }
@@ -75,7 +79,7 @@ public class EventController {
         }
 
         Event event = Event.builder()
-                .eventName(eventDto.getEventName())
+                .eventName(Character.toUpperCase(eventDto.getEventName().charAt(0)) + eventDto.getEventName().substring(1))
                 .owner(userService.getCurrentlyLoggedInUser())
                 .build();
 
@@ -86,9 +90,26 @@ public class EventController {
     }
 
     @GetMapping("/delete")
-    public String deleteEvent(@RequestParam("eventId") Integer eventId) {
-        eventService.deleteById(eventId);
-        return "redirect:/events";
+    public String deleteEvent(@RequestParam("eventId") Integer eventId,
+                              Authentication authentication,
+                              Model model) {
+
+        Event event = eventService.findById(eventId);
+        User user = userService.getCurrentlyLoggedInUser();
+
+        model.addAttribute("loggedInUser", authentication.getName());
+
+        if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
+            model.addAttribute("deleteError", "You cannot delete an unsettled event.");
+        } else if (event.getOwner().equals(user)) {
+            expenseService.deleteByEventId(eventId);
+            eventService.deleteById(eventId);
+        }
+
+        List<Event> events = eventService.findAllEvents();
+        model.addAttribute("events", events);
+
+        return "events";
     }
 
     @GetMapping("/events/{eventId}/users")

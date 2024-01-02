@@ -74,6 +74,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         return mapUserPerBalance;
     }
 
+    @Override
+    public void deleteByEventId(Integer eventId) {
+        expenseRepository.deleteById(eventId);
+    }
+
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
         return expense.getPayoffs().stream()
                 .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))

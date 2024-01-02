@@ -49,7 +49,7 @@ public class Event {
     private List<User> eventUsers = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
+            CascadeType.DETACH, CascadeType.REFRESH,CascadeType.REMOVE})
     private Set<Expense> expenses;
 
     public void addUser(User user) {

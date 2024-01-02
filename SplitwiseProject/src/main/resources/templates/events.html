@@ -32,6 +32,9 @@
     <div class="row col-md-10">
         <h2>Events List</h2>
     </div>
+    <div th:if="${deleteError}" class="alert alert-danger" role="alert">
+        <p th:text="${deleteError}"></p>
+    </div>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
         <tr>
@@ -46,10 +49,12 @@
             <td th:text="${temp.id}"></td>
             <td th:text="${temp.eventName}"></td>
             <td>
-                <a th:href="@{/delete(eventId=${temp.id})}"
-                   class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure ?'))) return false">
-                    Delete
-                </a>
+                <th:block th:if="${temp.owner.username eq loggedInUser}">
+                    <a th:href="@{/delete(eventId=${temp.id})}"
+                       class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure ?'))) return false">
+                        Delete
+                    </a>
+                </th:block>
                 <a th:href="@{/events/{id}/expenses(id=${temp.id})}" class="btn btn-sm btn-success">
                     Expenses
                 </a>

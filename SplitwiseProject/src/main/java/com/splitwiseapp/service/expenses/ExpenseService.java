@@ -16,4 +16,5 @@ public interface ExpenseService {
     void deleteById(Integer expenseId);
     Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense);
     Map<Integer, BigDecimal> mapUserToBalance(Expense expense);
+    void deleteByEventId(Integer eventId);
 }
