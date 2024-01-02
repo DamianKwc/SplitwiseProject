@@ -34,15 +34,26 @@ public class ExpenseController {
     private final ExpenseRepository expenseRepository;
     private final PayoffService payoffService;
 
-    @GetMapping("/events/{eventId}/newExpense")
-    public String showExpenseForm(@PathVariable Integer eventId, Model model) {
+    @GetMapping("/events/{eventId}/newSplit")
+    public String showSplitExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventUsers = event.getEventUsers();
 
         model.addAttribute("event", event);
         model.addAttribute("eventUsers", eventUsers);
-        model.addAttribute("newExpense", new ExpenseDto());
-        return "new-expense";
+        model.addAttribute("newSplitExpense", new ExpenseDto());
+        return "new-split-expense";
+    }
+
+    @GetMapping("/events/{eventId}/newCustom")
+    public String showCustomExpenseForm(@PathVariable Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
+        List<User> eventUsers = event.getEventUsers();
+
+        model.addAttribute("event", event);
+        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("newCustomExpense", new ExpenseDto());
+        return "new-custom-expense";
     }
 
     @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")

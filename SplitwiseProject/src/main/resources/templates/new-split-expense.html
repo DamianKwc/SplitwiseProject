@@ -37,10 +37,10 @@
         <div class="col-md-6 offset-md-3">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="text-center" th:text="'Create new expense for event: ' + ${event.eventName}"></h2>
+                    <h2 class="text-center" th:text="'Create new split expense for event: ' + ${event.eventName}"></h2>
                 </div>
                 <div class="card-body">
-                    <form action="#" th:action="@{'/events/' + ${event.id} + '/saveExpense'}" th:object="${newExpense}"
+                    <form action="#" th:action="@{'/events/' + ${event.id} + '/saveExpense'}" th:object="${newSplitExpense}"
                           method="post">
                         <div class="form-group mb-3">
                             <label class="control-label">Expense name</label>
@@ -55,7 +55,7 @@
                                    placeholder="Enter expense amount"/>
                         </div>
                         <div>
-                            <label class="control-label">Expense participant</label>
+                            <label class="control-label">Expense participants</label>
                             <select id="participantsDropdown" class="form-select" multiple
                                     th:field="*{participantUsername}">
                                 <option value="0" selected disabled>Choose all participants of this expense</option>
