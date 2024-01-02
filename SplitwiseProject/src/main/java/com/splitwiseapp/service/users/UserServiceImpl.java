@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private Role checkRoleExist(){
+    private Role checkRoleExist() {
         Role role = new Role();
         role.setRole("ROLE_ADMIN");
         return roleRepository.save(role);
@@ -43,14 +44,14 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         Role role = roleRepository.findByRole("ROLE_ADMIN");
-        if(role == null){
+        if (role == null) {
             role = checkRoleExist();
         }
         user.setRoles(List.of(role));
         userRepository.save(user);
     }
 
-    private UserDto mapToUserDto(User user){
+    private UserDto mapToUserDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setFirstName(user.getFirstName());
         userDto.setUsername(user.getUsername());
@@ -105,11 +106,10 @@ public class UserServiceImpl implements UserService {
     public BigDecimal calculateUserBalance(Integer userId, BigDecimal paidOffAmount) {
         User foundUser = userRepository.findById(userId).orElseThrow();
         BigDecimal balance = foundUser.getBalance();
-        BigDecimal calculatedBalance = null;
-        if (balance != null) {
-            calculatedBalance = balance.add(paidOffAmount);
-        }
-        return calculatedBalance;
+
+        return balance == null
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
+                : balance.add(paidOffAmount);
     }
 
     public List<UserDto> findAllUsers() {
