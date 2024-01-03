@@ -49,13 +49,11 @@
         <tbody>
         <tr th:each="temp : ${events}">
             <td th:text="${temp.id}"></td>
-            <td><!-- Warunek: event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0 -->
+            <td>
                 <th:block th:if="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
-                    <!-- Czerwony X -->
                     <span class="badge bg-danger">X</span>
                 </th:block>
                 <th:block th:unless="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
-                    <!-- Zielona fajeczka -->
                     <span class="badge bg-success">✓</span>
                 </th:block>
             </td>
