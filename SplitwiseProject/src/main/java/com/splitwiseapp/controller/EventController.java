@@ -19,6 +19,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,7 @@ public class EventController {
                 .owner(userService.getCurrentlyLoggedInUser())
                 .build();
 
+        event.setCreationDate(LocalDate.now());
         event.addUser(userService.getCurrentlyLoggedInUser());
         event.setOwner(userService.getCurrentlyLoggedInUser());
         eventService.saveEvent(event);

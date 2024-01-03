@@ -39,14 +39,26 @@
         <thead class="table-dark">
         <tr>
             <th>ID</th>
+            <th>Settled</th>
             <th>Event</th>
             <th>Event action</th>
+            <th>Creation date</th>
         </tr>
         </thead>
 
         <tbody>
         <tr th:each="temp : ${events}">
             <td th:text="${temp.id}"></td>
+            <td><!-- Warunek: event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0 -->
+                <th:block th:if="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
+                    <!-- Czerwony X -->
+                    <span class="badge bg-danger">X</span>
+                </th:block>
+                <th:block th:unless="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
+                    <!-- Zielona fajeczka -->
+                    <span class="badge bg-success">✓</span>
+                </th:block>
+            </td>
             <td th:text="${temp.eventName}"></td>
             <td>
                 <th:block th:if="${temp.owner.username eq loggedInUser}">
@@ -71,6 +83,7 @@
                     </span>
                 </a>
             </td>
+            <td th:text="${temp.creationDate}"></td>
         </tr>
             </td>
         </tr>
