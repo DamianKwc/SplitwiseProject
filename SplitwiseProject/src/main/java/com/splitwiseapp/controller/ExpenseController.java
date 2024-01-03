@@ -19,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Data
@@ -107,13 +108,15 @@ public class ExpenseController {
     public String assignPaidOffAmount(@PathVariable("eventId") Integer eventId,
                                       @PathVariable("expenseId") Integer expenseId,
                                       @PathVariable("userId") Integer userId,
-                                      @RequestParam("paidOffAmount") String paidOffAmount) {
+                                      @RequestParam("paidOffAmount") String paidOffAmount,
+                                      Model model) {
         Expense foundExpense = expenseService.findById(expenseId);
         User foundUser = userService.findById(userId);
 
         BigDecimal paidOffFromInput = paidOffAmount == null
-                ? BigDecimal.ZERO
-                : new BigDecimal(paidOffAmount.replaceAll(",", "."));
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
+                : new BigDecimal(paidOffAmount.replaceAll(",", ".")).setScale(2, RoundingMode.CEILING);
+        BigDecimal userBalance = userService.calculateUserBalance(userId, paidOffFromInput);
 
         Payoff payoff = Payoff.builder()
                 .expensePaid(foundExpense)
@@ -126,11 +129,13 @@ public class ExpenseController {
         }
         foundExpense.getPayoffs().add(payoff);
         foundUser.getPayoffs().add(payoff);
-        foundUser.setBalance(userService.calculateUserBalance(userId, paidOffFromInput));
+        foundUser.setBalance(userBalance);
 
         userService.save(foundUser);
         expenseService.saveExpense(foundExpense);
         payoffService.savePayoff(payoff);
+
+        model.addAttribute("userBalance", userBalance);
 
         return "redirect:/events/" + eventId + "/expenses";
     }

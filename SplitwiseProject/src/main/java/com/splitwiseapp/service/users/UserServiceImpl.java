@@ -106,10 +106,11 @@ public class UserServiceImpl implements UserService {
     public BigDecimal calculateUserBalance(Integer userId, BigDecimal paidOffAmount) {
         User foundUser = userRepository.findById(userId).orElseThrow();
         BigDecimal balance = foundUser.getBalance();
+        BigDecimal amountToAdd = paidOffAmount == null ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING) : paidOffAmount;
 
         return balance == null
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
-                : balance.add(paidOffAmount);
+                : balance.add(amountToAdd);
     }
 
     public List<UserDto> findAllUsers() {
