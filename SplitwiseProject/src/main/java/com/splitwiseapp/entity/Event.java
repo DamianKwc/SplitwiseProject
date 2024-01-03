@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +30,10 @@ public class Event {
 
     @Column(name = "event_name", unique = true)
     private String eventName;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "creation_date")
+    private LocalDate creationDate;
 
     @JsonIgnore
     @Column(name = "eventBalance")
