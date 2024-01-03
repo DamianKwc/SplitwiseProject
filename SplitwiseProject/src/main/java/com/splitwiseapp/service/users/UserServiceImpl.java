@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +39,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setFirstName(userDto.getFirstName());
         user.setUsername(userDto.getUsername());
+        user.setBalance(BigDecimal.ZERO);
         // encrypt the password using spring security
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
@@ -100,16 +100,6 @@ public class UserServiceImpl implements UserService {
                 .filter(expense -> expense.getParticipants().contains(foundUser))
                 .map(Expense::getEqualSplit)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    @Override
-    public BigDecimal calculateUserBalance(Integer userId, BigDecimal paidOffAmount) {
-        User foundUser = userRepository.findById(userId).orElseThrow();
-        BigDecimal balance = foundUser.getBalance();
-
-        return balance == null
-                ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
-                : balance.add(paidOffAmount);
     }
 
     public List<UserDto> findAllUsers() {

@@ -30,7 +30,7 @@ public class UserController {
 
         model.addAttribute("userEvents", userEvents);
         model.addAttribute("user", loggedInUser);
-        model.addAttribute("userBalance", userService.calculateUserBalance(loggedInUser.getId(), null));
+        model.addAttribute("userBalance", loggedInUser.getBalance());
 
         return "profile";
     }

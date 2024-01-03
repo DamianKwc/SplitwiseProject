@@ -86,7 +86,7 @@
                 <tr>
                     <th>First Name</th>
                     <th>Username</th>
-                    <th th:if="${add_id!=null||remove_id!=null}"></th>
+                    <th th:if="${add_id!=null||remove_id!=null}">Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -99,8 +99,7 @@
                             onclick="return confirm('Are you sure you want to remove this user?');">
                             Remove User
                         </a>
-                    </td>
-                    <td>
+                        <br>
                         <a th:href="@{'/events/'+${event.id}+'/transferOwner/'+${user.id}}"
                            onclick="return confirm('Are you sure you want to transfer ownership?');">
                             Transfer Owner
