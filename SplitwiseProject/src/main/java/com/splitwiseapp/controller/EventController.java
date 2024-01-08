@@ -8,9 +8,7 @@ import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +46,8 @@ public class EventController {
         model.addAttribute("event", event);
         return "event";
     }
+
+
 
     @GetMapping("/newEvent")
     public String showEventAddingForm(Model model){
@@ -196,6 +195,22 @@ public class EventController {
         user.removeEvent(event);
         userService.save(user);
         return "redirect:/events/" + eventId + "/users";
+    }
+
+    @GetMapping("/events/{eventId}/transferOwner/{userId}")
+    public String transferOwner(@PathVariable("eventId") Integer eventId,
+            @PathVariable("userId") Integer userId,
+            Authentication authentication,
+            Model model) {
+
+        Event event = eventService.findById(eventId);
+        User user = userService.findById(userId);
+
+        model.addAttribute("loggedInUser", authentication.getName());
+
+        event.setOwner(user);
+        eventService.save(event);
+        return "redirect:/events";
     }
 
     @GetMapping("/events/{eventId}/addExpense")

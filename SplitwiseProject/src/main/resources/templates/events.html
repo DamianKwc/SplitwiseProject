@@ -68,10 +68,11 @@
                 <a th:href="@{/events/{id}/expenses(id=${temp.id})}" class="btn btn-sm btn-success">
                     Expenses
                 </a>
+                <th:block th:if="${temp.owner.username eq loggedInUser}">
                 <a th:switch="${#lists.size(temp.eventUsers)}">
                     <span th:case="0">
-                        <a th:href="@{'/events/'+${temp.id}+'/addUser?userId=1'}" class="btn btn-sm btn-primary">
-                            Add participants
+                        <a th:href="@{'/events/'+${temp.id}+'/addUser?userId=' + ${loggedInUser.id}}" class="btn btn-sm btn-primary">
+                    Add participants
                         </a>
                     </span>
                     <span th:case="*">
@@ -80,7 +81,10 @@
                         </a>
                     </span>
                 </a>
+
+
             </td>
+
             <td th:text="${temp.creationDate}"></td>
         </tr>
             </td>
