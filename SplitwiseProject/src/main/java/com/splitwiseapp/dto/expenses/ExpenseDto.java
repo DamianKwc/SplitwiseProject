@@ -17,8 +17,5 @@ public class ExpenseDto {
     private String cost;
 
     @NotEmpty
-    private String paidOffAmount;
-
-    @NotEmpty
     private String participantUsername;
 }

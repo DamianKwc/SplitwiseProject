@@ -47,52 +47,46 @@
         </thead>
 
         <tbody>
-        <tr th:each="temp : ${events}">
-            <td th:text="${temp.id}"></td>
+        <tr th:each="event : ${events}">
+            <td th:text="${event.id}"></td>
             <td>
-                <th:block th:if="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
+                <th:block th:if="${event.eventBalance != null and event.eventBalance.compareTo(0) < 0}">
                     <span class="badge bg-danger">X</span>
                 </th:block>
-                <th:block th:unless="${temp.eventBalance != null and temp.eventBalance.compareTo(0) < 0}">
+                <th:block th:unless="${event.eventBalance != null and event.eventBalance.compareTo(0) < 0}">
                     <span class="badge bg-success">✓</span>
                 </th:block>
             </td>
-            <td th:text="${temp.eventName}"></td>
+            <td th:text="${event.eventName}"></td>
             <td>
-                <th:block th:if="${temp.owner eq loggedInUser}">
-                    <a th:href="@{/delete(eventId=${temp.id})}"
-                       class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure ?'))) return false">
+                <th:block th:if="${event.owner.username eq loggedInUser}">
+                    <a th:href="@{/delete(eventId=${event.id})}" class="btn btn-danger btn-sm"
+                       onclick="if (!(confirm('Are you sure ?'))) return false">
                         Delete
                     </a>
                 </th:block>
-                <a th:href="@{/events/{id}/expenses(id=${temp.id})}" class="btn btn-sm btn-success">
+                <a th:href="@{/events/{id}/expenses(id=${event.id})}" class="btn btn-sm btn-success">
                     Expenses
                 </a>
-
-                <a th:switch="${#lists.size(temp.eventUsers)}">
-                    <span th:case="0">
-                        <th:block th:if="${temp.owner eq loggedInUser}">
-                        <a th:href="@{'/events/'+${temp.id}+'/addUser?userId=' + ${loggedInUser.id}}"
-                           class="btn btn-sm btn-primary">
-                            Add participants
-                        </a>
-                        </th:block>
-                    </span>
-                    <span th:case="*">
-                        <a th:href="@{/events/{id}/users(id=${temp.id})}" class="btn btn-sm btn-primary">
-                            Participants
-                        </a>
-                    </span>
-                </a>
-
-
+                <th:block th:if="${event.owner.username eq loggedInUser}">
+                    <a th:switch="${#lists.size(event.eventUsers)}">
+                        <span th:case="0">
+                            <a th:href="@{'/events/'+${event.id}+'/addUser?userId=' + ${event.owner.id}}"
+                               class="btn btn-sm btn-primary">
+                                Add participants
+                            </a>
+                        </span>
+                        <span th:case="*">
+                            <a th:href="@{/events/{id}/users(id=${event.id})}" class="btn btn-sm btn-primary">
+                                Participants
+                            </a>
+                        </span>
+                    </a>
+                </th:block>
             </td>
 
-            <td th:text="${temp.creationDate}"></td>
+            <td th:text="${event.creationDate}"></td>
         </tr>
-        </td>
-        </tr>
-
         </tbody>
     </table>
     <br>
