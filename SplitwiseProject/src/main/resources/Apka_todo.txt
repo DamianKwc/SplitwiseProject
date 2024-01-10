@@ -23,3 +23,5 @@
 12. Usuwanie expense nie zmienia balkansu w profilu użytkownika
 
 13. User który nie jest participantem nie widzi tego eventu
+
+14. Sprawdzić rejestracje usera, póki co zapisywany jako DTO
