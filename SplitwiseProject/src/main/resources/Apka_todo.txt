@@ -1,0 +1,25 @@
+1. Pozwól na te same nazwy wydatków pomiędzy różnymi eventami, ale nie pozwól na te same nazwy wydatków w obrębie tego samego eventu.
+
+2. W tej chwili, na stronie "/profile" to my nic nie mamy poza eventsami :) - czyli na dobrą sprawę dublujemy już to, co mamy po wejściu w /events - może całkiem to wyrzucić, albo dodać coś jeszcze do tego profilu? Może jakieś dane osobowe Usera, albo statystyki (ile ma swoich eventów, itp.)? Do przemyślenia.
+
+3. Przy próbie zachowania nullowego Expensa, leci błąd - zrobić walidację Expensa.
+
+4. AddParticipants z automatu dodaje zalogowanego użytkownika jako participanta - nie chcemy tak, chcemy móc wybrać kogo nam się podoba z listy.
+
+5. Czasami pierwsze logowanie jest nieskuteczne, dopiero za drugim razem udaje się logować do aplikacji - sprawdzić czemu tak jest.
+
+6. Można by dodać to "Logged in as XXX" na wszystkich zbiorczych stronach, nie tylko na "profile", ale także np. na "events"?
+
+7. "Remove User" w /events/X/users --> może zmienić to na "Remove user from event"? Teraz to sugeruje jakbyśmy go chcieli całkiem wywalić z bazy.
+
+8. "Transfer Owner" w /events/X/users --> może zmienić to na "Set as event owner"?
+
+9. Na stronie "/events", link do Profile jest inną czcionką (większą) niż Logout i Events. Może jakoś to zmienić? Profile i Events dałbym wyrównane do lewej, tą samą czcionką, a Logout większe i wyrównane do prawej. A tuż przed "Logout", dałbym jeszcze "Logged in as XXX".
+
+10. Dodać sortowanie każdej kolumny w tabelach z Bootstrapa - tak, że jak wcisnę nagłówek raz, to sortuje mi rosnąco, a jak wcisnę drugi raz - sortuje malejąco.
+
+11. Uguem to mamy tak naprawdę tylko dwie główne strony, po której możemy chodzić - "Events" i "Profile". Może dałoby się coś jeszcze dorobić żeby zwiększyć "ruch" w apce? :)  
+
+12. Usuwanie expense nie zmienia balkansu w profilu użytkownika
+
+13. User który nie jest participantem nie widzi tego eventu
