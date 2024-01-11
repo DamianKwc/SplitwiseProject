@@ -1,4 +1,4 @@
-package com.splitwiseapp.dto.users;
+package com.splitwiseapp.dto.user;
 
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.UserRepository;

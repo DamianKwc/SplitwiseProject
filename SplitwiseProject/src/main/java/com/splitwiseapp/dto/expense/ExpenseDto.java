@@ -1,4 +1,4 @@
-package com.splitwiseapp.dto.expenses;
+package com.splitwiseapp.dto.expense;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;

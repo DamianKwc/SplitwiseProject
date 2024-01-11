@@ -1,4 +1,4 @@
-package com.splitwiseapp.dto.users;
+package com.splitwiseapp.dto.user;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;

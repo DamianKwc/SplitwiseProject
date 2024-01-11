@@ -23,3 +23,12 @@
 12. User który nie jest participantem nie widzi tego eventu
 
 13. Sprawdzić rejestracje usera, póki co zapisywany jako DTO
+
+14. Po usunięciu participanta z danego eventu, pozostaje on ciągle w zapisanych już wydatkach danego eventu. Czy mamy go w takiej sytuacji usuwać również z tych wydatków?
+    Czy przyjmujemy że te które są zapisane, zostają tak jak były? Czy może po kliknięciu "Remove User" wyświetlimy modal w którym zapytamy użytkownika co chce zrobić - usunąć czy zostawić w zapisanych wydatkach?
+
+15. W /register komunikaty walidacji są po polsku ("nie może być puste"), a w innych miejscach mamy te komunikaty po angielsku - ujednolicić
+
+16. Na stronie /index, tam gdzie mamy komunikat "Welcome in SplitNotThatWise" dajmy jakieś zdjęcie, tło, cokolwiek, żeby nie biło pustką po oczach. Można pomyśleć ogólnie o ładnym templacie dla całej apki.
+
+17. Ujednolicić te nazwy metod w controllerach - raz jest addEvent, raz createExpense - zróbmy wszędzie spójnie.

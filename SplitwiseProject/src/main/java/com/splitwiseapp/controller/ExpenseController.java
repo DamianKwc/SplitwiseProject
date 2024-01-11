@@ -1,7 +1,11 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.dto.expenses.ExpenseDto;
-import com.splitwiseapp.entity.*;
+import com.splitwiseapp.dto.expense.ExpenseDto;
+import com.splitwiseapp.dto.expense.ExpenseMapper;
+import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.Expense;
+import com.splitwiseapp.entity.Payoff;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
 import com.splitwiseapp.repository.UserRepository;
@@ -11,8 +15,6 @@ import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,8 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
 
 @Data
 @Controller
@@ -34,6 +37,7 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     private final ExpenseRepository expenseRepository;
     private final PayoffService payoffService;
+    private final ExpenseMapper expenseMapper;
 
     @GetMapping("/events/{eventId}/newExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
@@ -69,36 +73,12 @@ public class ExpenseController {
                                 @PathVariable Integer id,
                                 BindingResult result,
                                 Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByUsername(username);
+        Event foundEvent = eventService.findById(id);
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
 
-        TreeSet<User> expenseParticipants = getUsers(expenseDto);
+        Expense expense = expenseMapper.mapToDomain(foundEvent, expenseDto);
+        TreeSet<User> expenseParticipants = userService.getUsersByNames(expenseDto);
         List<Payoff> expensePayoffs = new ArrayList<>();
-        BigDecimal cost = expenseDto.getCost() == null
-                ? BigDecimal.ZERO
-                : new BigDecimal(expenseDto.getCost().replaceAll(",", "."));
-        BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, expenseParticipants.size());
-
-        expenseParticipants.forEach(participant -> {
-            List<String> namesOfExistingExpenses = participant.getExpenses().stream()
-                    .map(Expense::getName)
-                    .collect(Collectors.toList());
-            if (!namesOfExistingExpenses.contains(expenseDto.getName())) {
-                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(costPerParticipant));
-            }
-            userService.save(participant);
-        });
-
-        Expense expense = Expense.builder()
-                .name(expenseDto.getName())
-                .totalCost(cost)
-                .costPerParticipant(costPerParticipant)
-                .event(eventService.findById(id))
-                .participants(expenseParticipants)
-                .payoffAmountPerUser(new HashMap<>())
-                .balancePerUser(new HashMap<>())
-                .build();
 
         Payoff defaultPayoff = Payoff.builder()
                 .expensePaid(expense)
@@ -107,9 +87,6 @@ public class ExpenseController {
                 .build();
         expensePayoffs.add(defaultPayoff);
         expense.setPayoffs(expensePayoffs);
-
-
-        model.addAttribute("expenseParticipants", expenseParticipants);
 
         if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
             result.rejectValue("name", "That expense already exists or given name is incorrect.",
@@ -120,9 +97,9 @@ public class ExpenseController {
             return "redirect:/events/{id}/expenses";
         }
 
-        expenseService.saveExpense(expense);
-        System.out.println(expense);
+        expenseService.save(expense);
 
+        model.addAttribute("expenseParticipants", expenseParticipants);
         return "redirect:/events/" + id + "/expenses";
     }
 
@@ -154,8 +131,8 @@ public class ExpenseController {
         foundUser.setBalance(userBalance);
 
         userService.save(foundUser);
-        expenseService.saveExpense(foundExpense);
-        payoffService.savePayoff(payoff);
+        expenseService.save(foundExpense);
+        payoffService.save(payoff);
 
         model.addAttribute("userBalance", userBalance);
 
@@ -167,7 +144,7 @@ public class ExpenseController {
         Expense expense = expenseService.findById(expenseId);
         User user = userService.findById(userId);
         expense.addParticipant(user);
-        expenseService.saveExpense(expense);
+        expenseService.save(expense);
         user.addExpense(expense);
         userService.save(user);
         return "redirect:/expenses/" + expenseId + "/users";
@@ -178,20 +155,10 @@ public class ExpenseController {
         Expense expense = expenseService.findById(expenseId);
         User user = userService.findById(userId);
         expense.removeParticipant(user);
-        expenseService.saveExpense(expense);
+        expenseService.save(expense);
         user.removeExpense(expense);
         userService.save(user);
         return "redirect:/expenses/" + expenseId + "/users";
-    }
-
-    private TreeSet<User> getUsers(ExpenseDto expenseDto) {
-        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
-        String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
-        for (String username : splitUsernames) {
-            User foundUser = userService.findByUsername(username);
-            participants.add(foundUser);
-        }
-        return participants;
     }
 
     private boolean doesExpenseWithGivenNameAlreadyExist(ExpenseDto expenseDto) {

@@ -12,7 +12,7 @@ public class PayoffServiceImpl implements PayoffService {
     private PayoffRepository payoffRepository;
 
     @Override
-    public void savePayoff(Payoff payoff) {
+    public void save(Payoff payoff) {
         payoffRepository.save(payoff);
     }
 }

@@ -1,7 +1,7 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.dto.events.EventDto;
-import com.splitwiseapp.dto.users.UserDto;
+import com.splitwiseapp.dto.event.EventDto;
+import com.splitwiseapp.dto.event.EventMapper;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
@@ -9,7 +9,6 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,7 +16,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,77 +27,59 @@ public class EventController {
     private final EventService eventService;
     private final UserService userService;
     private final ExpenseService expenseService;
+    private final EventMapper eventMapper;
 
     @GetMapping("/events")
-    public String events(Model model, Authentication authentication) {
+    public String events(Model model) {
         List<Event> events = eventService.findAllEvents();
-
         model.addAttribute("events", events);
-        model.addAttribute("loggedInUser", authentication.getName());
-
+        model.addAttribute("loggedInUser", userService.getCurrentlyLoggedInUser().getUsername());
         return "events";
     }
 
     @GetMapping("/events/{eventId}")
-    public String eventDetails(@PathVariable("eventId") Integer eventId,Model model) {
+    public String eventDetails(@PathVariable("eventId") Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         model.addAttribute("event", event);
         return "event";
     }
 
 
-
     @GetMapping("/newEvent")
-    public String showEventAddingForm(Model model){
-
-        List<UserDto> allUsers = userService.findAllUsers();
-
+    public String showEventAddingForm(Model model) {
+        List<User> allUsers = userService.findAllUsers();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
         return "new-event";
     }
 
     @PostMapping("/newEvent")
-    public String addEvent(@ModelAttribute("newEvent") EventDto eventDto,
+    public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
                            BindingResult result) {
-
         Event existingEvent = eventService.findByEventName(eventDto.getEventName());
 
-        if(existingEvent != null && existingEvent.getEventName() != null && !existingEvent.getEventName().isEmpty()){
+        if (doesEventAlreadyExist(existingEvent)) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event '" +  existingEvent.getEventName() + "' already exists." ));
+                    "Event '" + existingEvent.getEventName() + "' already exists."));
         }
 
         if (eventDto.getEventName().isBlank()) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event name field cannot be empty." ));
+                    "Event name field cannot be empty."));
         }
 
         if (result.hasErrors()) {
             return "new-event";
         }
 
-        Event event = Event.builder()
-                .eventName(Character.toUpperCase(eventDto.getEventName().charAt(0)) + eventDto.getEventName().substring(1))
-                .owner(userService.getCurrentlyLoggedInUser())
-                .build();
-
-        event.setCreationDate(LocalDate.now());
-        event.addUser(userService.getCurrentlyLoggedInUser());
-        event.setOwner(userService.getCurrentlyLoggedInUser());
-        eventService.saveEvent(event);
+        eventService.save(eventMapper.mapToDomain(eventDto));
         return "redirect:/events";
     }
 
     @GetMapping("/delete")
-    public String deleteEvent(@RequestParam("eventId") Integer eventId,
-                              Authentication authentication,
-                              Model model) {
-
+    public String deleteEvent(@RequestParam("eventId") Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         User user = userService.getCurrentlyLoggedInUser();
-
-        model.addAttribute("loggedInUser", authentication.getName());
 
         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
             model.addAttribute("deleteError", "You cannot delete an unsettled event.");
@@ -110,7 +90,7 @@ public class EventController {
 
         List<Event> events = eventService.findAllEvents();
         model.addAttribute("events", events);
-
+        model.addAttribute("loggedInUser", user.getUsername());
         return "events";
     }
 
@@ -124,8 +104,7 @@ public class EventController {
 
         model.addAttribute("event", event);
 
-        for (User u: allUsers)
-        {
+        for (User u : allUsers) {
             if (!eventUsers.contains(u)) {
                 remainingUsers.add(u);
             }
@@ -154,8 +133,7 @@ public class EventController {
             expense.setBalancePerUser(balancePerParticipant);
         }
 
-        for (User u: allUsers)
-        {
+        for (User u : allUsers) {
             if (!eventUsers.contains(u)) {
                 remainingUsers.add(u);
             }
@@ -199,17 +177,13 @@ public class EventController {
 
     @GetMapping("/events/{eventId}/transferOwner/{userId}")
     public String transferOwner(@PathVariable("eventId") Integer eventId,
-            @PathVariable("userId") Integer userId,
-            Authentication authentication,
-            Model model) {
-
+                                @PathVariable("userId") Integer userId,
+                                Model model) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
-
-        model.addAttribute("loggedInUser", authentication.getName());
-
         event.setOwner(user);
         eventService.save(event);
+        model.addAttribute("loggedInUser", user.getUsername());
         return "redirect:/events";
     }
 
@@ -220,7 +194,7 @@ public class EventController {
         event.addExpense(expense);
         eventService.save(event);
         expense.addEvent(event);
-        expenseService.saveExpense(expense);
+        expenseService.save(expense);
         return "redirect:/events/" + eventId + "/expenses";
     }
 
@@ -231,7 +205,7 @@ public class EventController {
         event.removeExpense(expense);
         eventService.save(event);
         expense.removeEvent();
-        expenseService.saveExpense(expense);
+        expenseService.save(expense);
         return "redirect:/events/" + eventId + "/expenses";
     }
 
@@ -239,6 +213,10 @@ public class EventController {
         return eventExpenses.stream()
                 .flatMap(expense -> expense.getBalancePerUser().values().stream())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private boolean doesEventAlreadyExist(Event existingEvent) {
+        return existingEvent != null && !existingEvent.getEventName().isBlank();
     }
 
 }

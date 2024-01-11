@@ -1,21 +1,20 @@
 package com.splitwiseapp.service.users;
 
-import com.splitwiseapp.dto.users.UserDto;
+import com.splitwiseapp.dto.expense.ExpenseDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
-import com.splitwiseapp.entity.Role;
 import com.splitwiseapp.entity.User;
-import com.splitwiseapp.repository.RoleRepository;
+import com.splitwiseapp.entity.UsernameComparator;
 import com.splitwiseapp.repository.UserRepository;
 import com.splitwiseapp.service.events.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,39 +23,6 @@ public class UserServiceImpl implements UserService {
 
     private final EventService eventService;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    private Role checkRoleExist() {
-        Role role = new Role();
-        role.setRole("ROLE_ADMIN");
-        return roleRepository.save(role);
-    }
-
-    @Override
-    public void saveUser(UserDto userDto) {
-        User user = new User();
-        user.setFirstName(userDto.getFirstName());
-        user.setUsername(userDto.getUsername());
-        user.setBalance(BigDecimal.ZERO);
-        // encrypt the password using spring security
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-
-        Role role = roleRepository.findByRole("ROLE_ADMIN");
-        if (role == null) {
-            role = checkRoleExist();
-        }
-        user.setRoles(List.of(role));
-        userRepository.save(user);
-    }
-
-    private UserDto mapToUserDto(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setFirstName(user.getFirstName());
-        userDto.setUsername(user.getUsername());
-        userDto.setPassword(user.getPassword());
-        return userDto;
-    }
 
     @Override
     public User findById(Integer userId) {
@@ -74,8 +40,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User save(User user) {
-        return userRepository.save(user);
+    public void save(User user) {
+        userRepository.save(user);
     }
 
     @Override
@@ -104,11 +70,19 @@ public class UserServiceImpl implements UserService {
                 .reduce(BigDecimal.ZERO, BigDecimal::subtract);
     }
 
-    public List<UserDto> findAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map((user) -> mapToUserDto(user))
-                .collect(Collectors.toList());
+    @Override
+    public TreeSet<User> getUsersByNames(ExpenseDto expenseDto) {
+        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
+        String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
+        for (String username : splitUsernames) {
+            User foundUser = this.findByUsername(username);
+            participants.add(foundUser);
+        }
+        return participants;
+    }
+
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 
 }

@@ -42,7 +42,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public void saveExpense(Expense expense) {
+    public void save(Expense expense) {
         expenseRepository.save(expense);
     }
 
