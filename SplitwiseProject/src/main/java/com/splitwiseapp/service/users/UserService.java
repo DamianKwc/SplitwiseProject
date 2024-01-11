@@ -17,5 +17,5 @@ public interface UserService{
     List<User> findAll();
     User save(User user);
     User getCurrentlyLoggedInUser();
-    BigDecimal calculateUserDebt(Integer userId);
+    BigDecimal calculateUserBalance(Integer userId);
 }

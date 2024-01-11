@@ -34,8 +34,8 @@ public class Expense {
     private BigDecimal expenseBalance;
 
     @JsonIgnore
-    @Column(name = "equal_split")
-    private BigDecimal equalSplit;
+    @Column(name = "cost_per_participant")
+    private BigDecimal costPerParticipant;
 
     @Transient
     @Builder.Default
@@ -50,15 +50,14 @@ public class Expense {
     @JoinColumn(name = "event_id")
     private Event event;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "expense_participants",
             joinColumns = @JoinColumn(name = "expense_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private Set<User> participants = new TreeSet<>();
+    private Set<User> participants = new HashSet<>();
 
     @OneToMany(mappedBy = "expensePaid", cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;
@@ -79,14 +78,13 @@ public class Expense {
         this.participants.remove(participant);
     }
 
-
     @Override
     public String toString() {
         return "Expense{" +
                 "name='" + name + '\'' +
                 ", totalCost=" + totalCost +
                 ", expenseBalance=" + expenseBalance +
-                ", equalSplit=" + equalSplit +
+                ", costPerParticipant=" + costPerParticipant +
                 ", event=" + event.getEventName() +
                 ", participants=" + participants +
                 ", payoffs=" + payoffs +

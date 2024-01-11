@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -52,7 +51,7 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH,CascadeType.REMOVE})
-    private Set<Expense> expenses;
+    private List<Expense> expenses;
 
     public void addUser(User user) {
         this.eventUsers.add(user);

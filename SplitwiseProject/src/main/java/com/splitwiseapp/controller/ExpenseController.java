@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Controller
@@ -46,8 +47,19 @@ public class ExpenseController {
     }
 
     @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
-    public String deleteExpense(@PathVariable Integer expenseId,
-                                @PathVariable Integer eventId) {
+    public String deleteExpense(@PathVariable Integer eventId,
+                                @PathVariable Integer expenseId) {
+        Event foundEvent = eventService.findById(eventId);
+        Expense foundExpense = expenseService.findById(expenseId);
+        BigDecimal costPerParticipant = foundExpense.getCostPerParticipant();
+
+        foundExpense.getParticipants().forEach(participant -> {
+            participant.setBalance(userService.calculateUserBalance(participant.getId()).add(costPerParticipant));
+            participant.getExpenses().removeIf(expense -> participant.getExpenses().contains(expense));
+            userService.save(participant);
+        });
+
+        foundEvent.removeExpense(foundExpense);
         expenseService.deleteById(expenseId);
         return "redirect:/events/" + eventId + "/expenses";
     }
@@ -67,15 +79,21 @@ public class ExpenseController {
                 ? BigDecimal.ZERO
                 : new BigDecimal(expenseDto.getCost().replaceAll(",", "."));
         BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, expenseParticipants.size());
+
         expenseParticipants.forEach(participant -> {
-            participant.setBalance(participant.getBalance().subtract(costPerParticipant));
+            List<String> namesOfExistingExpenses = participant.getExpenses().stream()
+                    .map(Expense::getName)
+                    .collect(Collectors.toList());
+            if (!namesOfExistingExpenses.contains(expenseDto.getName())) {
+                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(costPerParticipant));
+            }
             userService.save(participant);
         });
 
         Expense expense = Expense.builder()
                 .name(expenseDto.getName())
                 .totalCost(cost)
-                .equalSplit(costPerParticipant)
+                .costPerParticipant(costPerParticipant)
                 .event(eventService.findById(id))
                 .participants(expenseParticipants)
                 .payoffAmountPerUser(new HashMap<>())
@@ -120,7 +138,7 @@ public class ExpenseController {
         BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
                 : new BigDecimal(paidOffAmount.replaceAll(",", ".")).setScale(2, RoundingMode.CEILING);
-        BigDecimal userBalance = foundUser.getBalance().add(paidOffFromInput);
+        BigDecimal userBalance = userService.calculateUserBalance(foundUser.getId()).add(paidOffFromInput);
 
         Payoff payoff = Payoff.builder()
                 .expensePaid(foundExpense)

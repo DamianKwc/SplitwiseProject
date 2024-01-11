@@ -88,6 +88,6 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
         BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
-        return payoffsSum.subtract(expense.getEqualSplit());
+        return payoffsSum.subtract(expense.getCostPerParticipant());
     }
 }

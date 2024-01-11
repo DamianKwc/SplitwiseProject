@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,19 +86,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public BigDecimal calculateUserDebt(Integer userId) {
+    public BigDecimal calculateUserBalance(Integer userId) {
         User foundUser = userRepository.findById(userId).orElseThrow();
 
         List<Event> eventsWithUserAsParticipant = eventService.findAllEvents().stream()
                 .filter(event -> event.getEventUsers().contains(foundUser))
                 .collect(Collectors.toList());
 
-        return eventsWithUserAsParticipant.stream()
+        List<Expense> expensesWithUserAsParticipant = eventsWithUserAsParticipant.stream()
                 .map(Event::getExpenses)
-                .flatMap(Set::stream)
+                .flatMap(List::stream)
                 .filter(expense -> expense.getParticipants().contains(foundUser))
-                .map(Expense::getEqualSplit)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .collect(Collectors.toList());
+
+        return expensesWithUserAsParticipant.stream()
+                .map(Expense::getCostPerParticipant)
+                .reduce(BigDecimal.ZERO, BigDecimal::subtract);
     }
 
     public List<UserDto> findAllUsers() {

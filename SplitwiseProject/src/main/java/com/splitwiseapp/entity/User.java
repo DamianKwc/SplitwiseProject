@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -32,10 +34,6 @@ public class User {
     private String password;
 
     @JsonIgnore
-    @Column(name = "user_debt")
-    private BigDecimal userDebt;
-
-    @JsonIgnore
     @Column(name = "balance")
     private BigDecimal balance;
 
@@ -52,10 +50,9 @@ public class User {
     private List<Event> userEvents = new ArrayList<>();
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "participants", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
     @Builder.Default
-    private List<Expense> expenses = new ArrayList<>();
+    @ManyToMany(mappedBy = "participants")
+    private Set<Expense> expenses = new HashSet<>();
 
     @OneToMany(mappedBy = "userPaying")
     private List<Payoff> payoffs;
@@ -81,7 +78,6 @@ public class User {
         return "User{" +
                 "firstName='" + firstName + '\'' +
                 ", username='" + username + '\'' +
-                ", userDebt=" + userDebt +
                 ", balance=" + balance +
                 ", roles=" + roles.size() +
                 ", userEvents=" + userEvents.size() +

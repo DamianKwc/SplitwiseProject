@@ -18,10 +18,8 @@
 
 10. Dodać sortowanie każdej kolumny w tabelach z Bootstrapa - tak, że jak wcisnę nagłówek raz, to sortuje mi rosnąco, a jak wcisnę drugi raz - sortuje malejąco.
 
-11. Uguem to mamy tak naprawdę tylko dwie główne strony, po której możemy chodzić - "Events" i "Profile". Może dałoby się coś jeszcze dorobić żeby zwiększyć "ruch" w apce? :)  
+11. Uguem to mamy tak naprawdę tylko dwie główne strony, po której możemy chodzić - "Events" i "Profile". Może dałoby się coś jeszcze dorobić żeby zwiększyć "ruch" w apce? :)
 
-12. Usuwanie expense nie zmienia balkansu w profilu użytkownika
+12. User który nie jest participantem nie widzi tego eventu
 
-13. User który nie jest participantem nie widzi tego eventu
-
-14. Sprawdzić rejestracje usera, póki co zapisywany jako DTO
+13. Sprawdzić rejestracje usera, póki co zapisywany jako DTO
