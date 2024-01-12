@@ -23,7 +23,7 @@ public class ExpenseMapper {
 
     public Expense mapToDomain(Event event, ExpenseDto expenseDto) {
         TreeSet<User> expenseParticipants = userService.getUsersByNames(expenseDto);
-        BigDecimal cost = expenseDto.getCost() == null
+        BigDecimal cost = expenseDto.getCost().isBlank()
                 ? BigDecimal.ZERO
                 : new BigDecimal(expenseDto.getCost().replaceAll(",", "."));
         BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, expenseParticipants.size());

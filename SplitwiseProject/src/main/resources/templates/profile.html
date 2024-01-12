@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
@@ -20,15 +19,15 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+                </li>
                 <li class="nav-item ms-auto">
-                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
+                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${loggedInUserName}"></h5>
                 </li>
             </ul>
         </div>

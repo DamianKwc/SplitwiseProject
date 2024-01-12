@@ -11,7 +11,6 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -19,10 +18,18 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+                </li>
+                <li class="nav-item ms-auto">
+                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${loggedInUserName}"></h5>
                 </li>
             </ul>
         </div>
@@ -59,7 +66,7 @@
             </td>
             <td th:text="${event.eventName}"></td>
             <td>
-                <th:block th:if="${event.owner.username eq loggedInUser}">
+                <th:block th:if="${event.owner.username eq loggedInUserName}">
                     <a th:href="@{/delete(eventId=${event.id})}" class="btn btn-danger btn-sm"
                        onclick="if (!(confirm('Are you sure ?'))) return false">
                         Delete
@@ -68,7 +75,7 @@
                 <a th:href="@{/events/{id}/expenses(id=${event.id})}" class="btn btn-sm btn-success">
                     Expenses
                 </a>
-                <th:block th:if="${event.owner.username eq loggedInUser}">
+                <th:block th:if="${event.owner.username eq loggedInUserName}">
                     <a th:switch="${#lists.size(event.eventUsers)}">
                         <span th:case="0">
                             <a th:href="@{'/events/'+${event.id}+'/addUser?userId=' + ${event.owner.id}}"

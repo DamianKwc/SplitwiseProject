@@ -73,10 +73,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public TreeSet<User> getUsersByNames(ExpenseDto expenseDto) {
         TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
-        String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
-        for (String username : splitUsernames) {
-            User foundUser = this.findByUsername(username);
-            participants.add(foundUser);
+        if (expenseDto.getParticipantUsername() != null) {
+            String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
+            for (String username : splitUsernames) {
+                User foundUser = this.findByUsername(username);
+                participants.add(foundUser);
+            }
         }
         return participants;
     }

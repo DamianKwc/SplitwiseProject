@@ -13,11 +13,13 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
+import jakarta.validation.Valid;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -25,6 +27,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 @Controller
@@ -39,7 +43,7 @@ public class ExpenseController {
     private final PayoffService payoffService;
     private final ExpenseMapper expenseMapper;
 
-    @GetMapping("/events/{eventId}/newExpense")
+    @GetMapping("/events/{eventId}/saveExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventUsers = event.getEventUsers();
@@ -47,12 +51,14 @@ public class ExpenseController {
         model.addAttribute("event", event);
         model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("newExpense", new ExpenseDto());
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "new-expense";
     }
 
     @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
     public String deleteExpense(@PathVariable Integer eventId,
-                                @PathVariable Integer expenseId) {
+                                @PathVariable Integer expenseId,
+                                Model model) {
         Event foundEvent = eventService.findById(eventId);
         Expense foundExpense = expenseService.findById(expenseId);
         BigDecimal costPerParticipant = foundExpense.getCostPerParticipant();
@@ -65,17 +71,51 @@ public class ExpenseController {
 
         foundEvent.removeExpense(foundExpense);
         expenseService.deleteById(expenseId);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @PostMapping("/events/{id}/saveExpense")
-    public String createExpense(@ModelAttribute("expenses") ExpenseDto expenseDto,
-                                @PathVariable Integer id,
+    @PostMapping("/events/{eventId}/saveExpense")
+    public String createExpense(@ModelAttribute("newExpense") ExpenseDto expenseDto,
+                                @PathVariable Integer eventId,
                                 BindingResult result,
                                 Model model) {
-        Event foundEvent = eventService.findById(id);
-        User loggedInUser = userService.getCurrentlyLoggedInUser();
 
+        Event foundEvent = eventService.findById(eventId);
+        model.addAttribute("event", foundEvent);
+
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+
+        Expense existingExpense = expenseService.findByExpenseNameAndEventId(expenseDto.getName(), eventId);
+
+        List<User> eventUsers = foundEvent.getEventUsers();
+        model.addAttribute("eventUsers", eventUsers);
+
+        if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
+            result.addError(new FieldError("newExpense", "name",
+                    "Expense '" +  existingExpense.getName() + "' already exists." ));
+        }
+        if (expenseDto.getName().isBlank()) {
+            result.addError(new FieldError("newExpense", "name",
+                    "Expense name field cannot be empty." ));
+        }
+
+        Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
+        Matcher matcher = pattern.matcher(expenseDto.getCost());
+
+        if (!matcher.matches()) {
+            result.addError(new FieldError("newExpense", "cost",
+                    "Enter proper value for expense amount."));
+        }
+        if (expenseDto.getCost().isEmpty()) {
+            result.addError(new FieldError("newExpense", "cost",
+                    "Expense amount field cannot be empty."));
+        }
+
+        if (result.hasErrors()) {
+            return "new-expense";
+        }
         Expense expense = expenseMapper.mapToDomain(foundEvent, expenseDto);
         TreeSet<User> expenseParticipants = userService.getUsersByNames(expenseDto);
         List<Payoff> expensePayoffs = new ArrayList<>();
@@ -88,19 +128,11 @@ public class ExpenseController {
         expensePayoffs.add(defaultPayoff);
         expense.setPayoffs(expensePayoffs);
 
-        if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
-            result.rejectValue("name", "That expense already exists or given name is incorrect.",
-                    "That expense already exists or given name is incorrect.");
-        }
-        if (result.hasErrors()) {
-            model.addAttribute("expenses", expenseDto);
-            return "redirect:/events/{id}/expenses";
-        }
+        model.addAttribute("expenseParticipants", expenseParticipants);
 
         expenseService.save(expense);
 
-        model.addAttribute("expenseParticipants", expenseParticipants);
-        return "redirect:/events/" + id + "/expenses";
+        return "redirect:/events/" + eventId + "/expenses";
     }
 
     @GetMapping("/events/{eventId}/expenses/{expenseId}/users/{userId}")
@@ -111,6 +143,8 @@ public class ExpenseController {
                                       Model model) {
         Expense foundExpense = expenseService.findById(expenseId);
         User foundUser = userService.findById(userId);
+
+        model.addAttribute("paidOffAmount", paidOffAmount);
 
         BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)

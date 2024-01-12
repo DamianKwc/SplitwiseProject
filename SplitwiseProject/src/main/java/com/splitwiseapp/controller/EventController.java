@@ -33,7 +33,7 @@ public class EventController {
     public String events(Model model) {
         List<Event> events = eventService.findAllEvents();
         model.addAttribute("events", events);
-        model.addAttribute("loggedInUser", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "events";
     }
 
@@ -50,12 +50,14 @@ public class EventController {
         List<User> allUsers = userService.findAllUsers();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "new-event";
     }
 
     @PostMapping("/newEvent")
     public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
-                           BindingResult result) {
+                              Model model,
+                              BindingResult result) {
         Event existingEvent = eventService.findByEventName(eventDto.getEventName());
 
         if (doesEventAlreadyExist(existingEvent)) {
@@ -73,6 +75,7 @@ public class EventController {
         }
 
         eventService.save(eventMapper.mapToDomain(eventDto));
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "redirect:/events";
     }
 
@@ -90,7 +93,7 @@ public class EventController {
 
         List<Event> events = eventService.findAllEvents();
         model.addAttribute("events", events);
-        model.addAttribute("loggedInUser", user.getUsername());
+        model.addAttribute("loggedInUserName", user.getUsername());
         return "events";
     }
 
@@ -115,6 +118,7 @@ public class EventController {
         model.addAttribute("eventUsers", eventUsers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "users";
     }
 
@@ -125,6 +129,7 @@ public class EventController {
         List<User> eventUsers = event.getEventUsers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
+        User user = userService.getCurrentlyLoggedInUser();
 
         for (Expense expense : eventExpenses) {
             Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
@@ -143,6 +148,7 @@ public class EventController {
         event.setEventBalance(updatedBalance);
         eventService.save(event);
 
+        model.addAttribute("user", user);
         model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
@@ -150,6 +156,7 @@ public class EventController {
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "expenses";
     }
 
@@ -175,15 +182,15 @@ public class EventController {
         return "redirect:/events/" + eventId + "/users";
     }
 
-    @GetMapping("/events/{eventId}/transferOwner/{userId}")
-    public String transferOwner(@PathVariable("eventId") Integer eventId,
+    @GetMapping("/events/{eventId}/setAsEventOwner/{userId}")
+    public String setAsEventOwner(@PathVariable("eventId") Integer eventId,
                                 @PathVariable("userId") Integer userId,
                                 Model model) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
         event.setOwner(user);
         eventService.save(event);
-        model.addAttribute("loggedInUser", user.getUsername());
+        model.addAttribute("loggedInUserName", user.getUsername());
         return "redirect:/events";
     }
 

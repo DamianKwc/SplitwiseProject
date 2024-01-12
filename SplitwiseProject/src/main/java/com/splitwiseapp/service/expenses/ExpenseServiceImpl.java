@@ -48,7 +48,9 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber) {
-        return amount.divide(BigDecimal.valueOf(participantsNumber), 2, RoundingMode.CEILING);
+        return participantsNumber == 0
+                ? BigDecimal.ZERO
+                : amount.divide(BigDecimal.valueOf(participantsNumber), 2, RoundingMode.CEILING);
     }
 
     @Override
@@ -77,6 +79,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public void deleteByEventId(Integer eventId) {
         expenseRepository.deleteById(eventId);
+    }
+
+    @Override
+    public Expense findByExpenseNameAndEventId(String expenseName, Integer eventId) {
+        return expenseRepository.findByNameAndEventId(expenseName, eventId);
     }
 
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {

@@ -52,8 +52,8 @@ public class UserController {
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<Event> userEvents = loggedInUser.getUserEvents();
         model.addAttribute("userEvents", userEvents);
-        model.addAttribute("user", loggedInUser);
         model.addAttribute("userBalance", loggedInUser.getBalance());
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
         return "profile";
     }
 

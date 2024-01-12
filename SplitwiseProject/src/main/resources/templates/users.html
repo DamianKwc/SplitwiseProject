@@ -13,7 +13,6 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -21,10 +20,18 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+                </li>
+                <li class="nav-item ms-auto">
+                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${loggedInUserName}"></h5>
                 </li>
             </ul>
         </div>
@@ -100,9 +107,9 @@
                             Remove User
                         </a>
                         <br>
-                        <a th:href="@{'/events/'+${event.id}+'/transferOwner/'+${user.id}}"
+                        <a th:href="@{'/events/'+${event.id}+'/setAsEventOwner/'+${user.id}}"
                            onclick="return confirm('Are you sure you want to transfer ownership?');">
-                            Transfer Owner
+                            Set As Event Owner
                         </a>
                     </td>
                 </tr>
