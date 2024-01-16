@@ -1,19 +1,12 @@
-
 2. W tej chwili, na stronie "/profile" to my nic nie mamy poza eventsami :) - czyli na dobrą sprawę dublujemy już to, co mamy po wejściu w /events - może całkiem to wyrzucić, albo dodać coś jeszcze do tego profilu? Może jakieś dane osobowe Usera, albo statystyki (ile ma swoich eventów, itp.)? Do przemyślenia.
 
-4. AddParticipants z automatu dodaje zalogowanego użytkownika jako participanta - nie chcemy tak, chcemy móc wybrać kogo nam się podoba z listy.
-
 5. Czasami pierwsze logowanie jest nieskuteczne, dopiero za drugim razem udaje się logować do aplikacji - sprawdzić czemu tak jest.
-
-7. "Remove User" w /events/X/users --> może zmienić to na "Remove user from event"? Teraz to sugeruje jakbyśmy go chcieli całkiem wywalić z bazy.
 
 10. Dodać sortowanie każdej kolumny w tabelach z Bootstrapa - tak, że jak wcisnę nagłówek raz, to sortuje mi rosnąco, a jak wcisnę drugi raz - sortuje malejąco.
 
 11. Uguem to mamy tak naprawdę tylko dwie główne strony, po której możemy chodzić - "Events" i "Profile". Może dałoby się coś jeszcze dorobić żeby zwiększyć "ruch" w apce? :)
 
 12. User który nie jest participantem nie widzi tego eventu
-
-13. Sprawdzić rejestracje usera, póki co zapisywany jako DTO
 
 14. Po usunięciu participanta z danego eventu, pozostaje on ciągle w zapisanych już wydatkach danego eventu. Czy mamy go w takiej sytuacji usuwać również z tych wydatków?
     Czy przyjmujemy że te które są zapisane, zostają tak jak były? Czy może po kliknięciu "Remove User" wyświetlimy modal w którym zapytamy użytkownika co chce zrobić - usunąć czy zostawić w zapisanych wydatkach?

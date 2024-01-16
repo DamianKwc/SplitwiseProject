@@ -14,14 +14,11 @@ public class EventMapper {
     private final UserService userService;
 
     public Event mapToDomain(EventDto eventDto) {
-        Event event = Event.builder()
+        return Event.builder()
                 .eventName(getEventName(eventDto))
                 .owner(userService.getCurrentlyLoggedInUser())
                 .creationDate(LocalDate.now())
                 .build();
-        event.addUser(userService.getCurrentlyLoggedInUser()); //TODO: Do wywalenia po zrobieniu punktu nr 4 z listy todosów
-
-        return event;
     }
 
     public EventDto mapToDto(Event event) {

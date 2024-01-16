@@ -45,10 +45,10 @@ public class ExpenseController {
     @GetMapping("/events/{eventId}/newExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
-        List<User> eventUsers = event.getEventUsers();
+        List<User> eventMembers = event.getEventMembers();
 
         model.addAttribute("event", event);
-        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("newExpense", new ExpenseDto());
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "new-expense";
@@ -85,8 +85,8 @@ public class ExpenseController {
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         model.addAttribute("loggedInUserName", loggedInUser.getUsername());
 
-        List<User> eventUsers = foundEvent.getEventUsers();
-        model.addAttribute("eventUsers", eventUsers);
+        List<User> eventMembers = foundEvent.getEventMembers();
+        model.addAttribute("eventMembers", eventMembers);
 
         Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(expenseDto.getName(), eventId));
         existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",

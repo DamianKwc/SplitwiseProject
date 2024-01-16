@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         User foundUser = userRepository.findById(userId).orElseThrow();
 
         List<Event> eventsWithUserAsParticipant = eventService.findAllEvents().stream()
-                .filter(event -> event.getEventUsers().contains(foundUser))
+                .filter(event -> event.getEventMembers().contains(foundUser))
                 .collect(Collectors.toList());
 
         List<Expense> expensesWithUserAsParticipant = eventsWithUserAsParticipant.stream()

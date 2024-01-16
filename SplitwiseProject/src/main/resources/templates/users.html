@@ -97,18 +97,18 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="user : ${eventUsers}" th:unless="${user.id == event.owner.id}">
+                <tr th:each="user : ${eventMembers}">
                     <td th:text="${user.firstName}"></td>
                     <td th:text="${user.username}"></td>
                     <td>
                         <a th:if="${remove_id!=null}"
                            th:href="@{'/events/'+${remove_id}+'/removeUser?userId='+${user.id}}"
-                            onclick="return confirm('Are you sure you want to remove this user?');">
-                            Remove User
+                            onclick="return confirm('Are you sure you want to remove user from this event?');">
+                            Remove from Event
                         </a>
                         <br>
                         <a th:href="@{'/events/'+${event.id}+'/setAsEventOwner/'+${user.id}}"
-                           onclick="return confirm('Are you sure you want to transfer ownership?');">
+                           onclick="return confirm('Are you sure you want to change owner?');">
                             Set As Event Owner
                         </a>
                     </td>
