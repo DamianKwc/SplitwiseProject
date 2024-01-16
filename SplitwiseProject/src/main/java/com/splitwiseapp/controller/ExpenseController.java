@@ -13,9 +13,7 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
-import jakarta.validation.Valid;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +42,7 @@ public class ExpenseController {
     private final PayoffService payoffService;
     private final ExpenseMapper expenseMapper;
 
-    @GetMapping("/events/{eventId}/saveExpense")
+    @GetMapping("/events/{eventId}/newExpense")
     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventUsers = event.getEventUsers();
@@ -80,25 +79,22 @@ public class ExpenseController {
                                 @PathVariable Integer eventId,
                                 BindingResult result,
                                 Model model) {
-
         Event foundEvent = eventService.findById(eventId);
         model.addAttribute("event", foundEvent);
 
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         model.addAttribute("loggedInUserName", loggedInUser.getUsername());
 
-        Expense existingExpense = expenseService.findByExpenseNameAndEventId(expenseDto.getName(), eventId);
-
         List<User> eventUsers = foundEvent.getEventUsers();
         model.addAttribute("eventUsers", eventUsers);
 
-        if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
-            result.addError(new FieldError("newExpense", "name",
-                    "Expense '" +  existingExpense.getName() + "' already exists." ));
-        }
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(expenseDto.getName(), eventId));
+        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
+                "Expense '" + expense.getName() + "' already exists.")));
+
         if (expenseDto.getName().isBlank()) {
             result.addError(new FieldError("newExpense", "name",
-                    "Expense name field cannot be empty." ));
+                    "Expense name field cannot be empty."));
         }
 
         Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
@@ -193,11 +189,6 @@ public class ExpenseController {
         user.removeExpense(expense);
         userService.save(user);
         return "redirect:/expenses/" + expenseId + "/users";
-    }
-
-    private boolean doesExpenseWithGivenNameAlreadyExist(ExpenseDto expenseDto) {
-        Expense expense = expenseRepository.findByName(expenseDto.getName());
-        return expense != null && !StringUtils.isBlank(expense.getName());
     }
 
 }
