@@ -1,0 +1,819 @@
+Subject: [PATCH] d00pa
+---
+Index: SplitwiseProject/src/main/resources/templates/expenses.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/expenses.html b/SplitwiseProject/src/main/resources/templates/expenses.html
+--- a/SplitwiseProject/src/main/resources/templates/expenses.html	
++++ b/SplitwiseProject/src/main/resources/templates/expenses.html	
+@@ -1,11 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="en" xmlns:th="http://www.thymeleaf.org">
+ <head>
+-    <!-- Required meta tags -->
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+-
+-    <!-- Bootstrap CSS -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+     <title>Registration and Login System</title>
+@@ -14,7 +11,6 @@
+ <body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container-fluid">
+-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+@@ -22,11 +18,19 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                 </li>
++            </ul>
++            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
++                <li class="nav-item ms-auto">
++                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
++                </li>
+             </ul>
+         </div>
+     </div>
+@@ -39,7 +43,7 @@
+ 
+                 <h2 th:text="'Total Balance: ' + ${updatedBalance}"></h2>
+ 
+-                <a th:href="@{'/events/' + ${eventId} + '/newExpense'}" class="btn btn-primary">
++                <a th:href="@{'/events/' + ${eventId} + '/saveExpense'}" class="btn btn-primary">
+                     Create Expense
+                 </a>
+                 <a th:href="@{'/events'}" class="btn btn-secondary">
+@@ -61,7 +65,7 @@
+                     </thead>
+                     <tbody>
+                     <tr th:each="expense : ${eventExpenses}">
+-                        <td th:text="${expense.name}"></td>
++                        <td th:text="${expense.expenseName}"></td>
+                         <td th:text="${expense.totalCost}"></td>
+                         <td>
+                             <div th:each="participant : ${expense.participants}"
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseService.java b/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseService.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseService.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseService.java	
+@@ -17,4 +17,6 @@
+     Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense);
+     Map<Integer, BigDecimal> mapUserToBalance(Expense expense);
+     void deleteByEventId(Integer eventId);
++    Expense findByExpenseName(String expenseName);
++    Expense findByExpenseNameAndEventId(String expenseName, Integer eventId);
+ }
+Index: SplitwiseProject/src/main/resources/templates/new-expense.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/new-expense.html b/SplitwiseProject/src/main/resources/templates/new-expense.html
+--- a/SplitwiseProject/src/main/resources/templates/new-expense.html	
++++ b/SplitwiseProject/src/main/resources/templates/new-expense.html	
+@@ -1,11 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="en" xmlns:th="http://www.thymeleaf.org">
+ <head>
+-    <!-- Required meta tags -->
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+-
+-    <!-- Bootstrap CSS -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+     <title>Create New Expense</title>
+@@ -13,7 +10,6 @@
+ <body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container-fluid">
+-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+@@ -21,13 +17,19 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
+                 </li>
+-            </ul>
+-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                 </li>
++            </ul>
++            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
++                <li class="nav-item ms-auto">
++                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
++                </li>
+             </ul>
+         </div>
+     </div>
+@@ -44,15 +46,18 @@
+                           method="post">
+                         <div class="form-group mb-3">
+                             <label class="control-label">Expense name</label>
+-                            <input type="text" id="expenseName" name="expenseName" th:field="*{name}"
++                            <input type="text" id="expenseName" name="expenseName" th:field="*{expenseName}"
+                                    class="form-control"
+                                    placeholder="Enter expense name"/>
++                            <p th:errors = "*{expenseName}" class="text-danger"
++                               th:if="${#fields.hasErrors('expenseName')}"></p>
+                         </div>
+                         <div class="form-group mb-3">
+                             <label class="control-label">Expense amount</label>
+                             <input type="text" id="expenseAmount" name="expenseAmount" th:field="*{cost}"
+                                    class="form-control"
+                                    placeholder="Enter expense amount"/>
++                            <p th:errors="*{cost}" class="text-danger"></p>
+                         </div>
+                         <div>
+                             <label class="control-label">Expense participant</label>
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseServiceImpl.java b/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseServiceImpl.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseServiceImpl.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/service/expenses/ExpenseServiceImpl.java	
+@@ -79,6 +79,16 @@
+         expenseRepository.deleteById(eventId);
+     }
+ 
++    @Override
++    public Expense findByExpenseName(String expenseName) {
++        return expenseRepository.findByExpenseName(expenseName);
++    }
++
++    @Override
++    public Expense findByExpenseNameAndEventId(String expenseName, Integer eventId) {
++        return expenseRepository.findByExpenseNameAndEventId(expenseName, eventId);
++    }
++
+     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
+         return expense.getPayoffs().stream()
+                 .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
+Index: SplitwiseProject/src/main/resources/Apka_todo.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/Apka_todo.txt b/SplitwiseProject/src/main/resources/Apka_todo.txt
+--- a/SplitwiseProject/src/main/resources/Apka_todo.txt	
++++ b/SplitwiseProject/src/main/resources/Apka_todo.txt	
+@@ -1,21 +1,12 @@
+-1. Pozwól na te same nazwy wydatków pomiędzy różnymi eventami, ale nie pozwól na te same nazwy wydatków w obrębie tego samego eventu.
+ 
+ 2. W tej chwili, na stronie "/profile" to my nic nie mamy poza eventsami :) - czyli na dobrą sprawę dublujemy już to, co mamy po wejściu w /events - może całkiem to wyrzucić, albo dodać coś jeszcze do tego profilu? Może jakieś dane osobowe Usera, albo statystyki (ile ma swoich eventów, itp.)? Do przemyślenia.
+ 
+-3. Przy próbie zachowania nullowego Expensa, leci błąd - zrobić walidację Expensa.
+-
+ 4. AddParticipants z automatu dodaje zalogowanego użytkownika jako participanta - nie chcemy tak, chcemy móc wybrać kogo nam się podoba z listy.
+ 
+ 5. Czasami pierwsze logowanie jest nieskuteczne, dopiero za drugim razem udaje się logować do aplikacji - sprawdzić czemu tak jest.
+ 
+-6. Można by dodać to "Logged in as XXX" na wszystkich zbiorczych stronach, nie tylko na "profile", ale także np. na "events"?
+-
+ 7. "Remove User" w /events/X/users --> może zmienić to na "Remove user from event"? Teraz to sugeruje jakbyśmy go chcieli całkiem wywalić z bazy.
+ 
+-8. "Transfer Owner" w /events/X/users --> może zmienić to na "Set as event owner"?
+-
+-9. Na stronie "/events", link do Profile jest inną czcionką (większą) niż Logout i Events. Może jakoś to zmienić? Profile i Events dałbym wyrównane do lewej, tą samą czcionką, a Logout większe i wyrównane do prawej. A tuż przed "Logout", dałbym jeszcze "Logged in as XXX".
+-
+ 10. Dodać sortowanie każdej kolumny w tabelach z Bootstrapa - tak, że jak wcisnę nagłówek raz, to sortuje mi rosnąco, a jak wcisnę drugi raz - sortuje malejąco.
+ 
+ 11. Uguem to mamy tak naprawdę tylko dwie główne strony, po której możemy chodzić - "Events" i "Profile". Może dałoby się coś jeszcze dorobić żeby zwiększyć "ruch" w apce? :)  
+Index: SplitwiseProject/src/main/resources/templates/users.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/users.html b/SplitwiseProject/src/main/resources/templates/users.html
+--- a/SplitwiseProject/src/main/resources/templates/users.html	
++++ b/SplitwiseProject/src/main/resources/templates/users.html	
+@@ -13,7 +13,6 @@
+ <body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container-fluid">
+-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+@@ -21,11 +20,19 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                 </li>
++            </ul>
++            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
++                <li class="nav-item ms-auto">
++                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
++                </li>
+             </ul>
+         </div>
+     </div>
+@@ -100,9 +107,9 @@
+                             Remove User
+                         </a>
+                         <br>
+-                        <a th:href="@{'/events/'+${event.id}+'/transferOwner/'+${user.id}}"
++                        <a th:href="@{'/events/'+${event.id}+'/setAsEventOwner/'+${user.id}}"
+                            onclick="return confirm('Are you sure you want to transfer ownership?');">
+-                            Transfer Owner
++                            Set As Event Owner
+                         </a>
+                     </td>
+                 </tr>
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/entity/Expense.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Expense.java b/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Expense.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Expense.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Expense.java	
+@@ -23,7 +23,7 @@
+ 
+     @JsonIgnore
+     @Column(name = "expense_name", nullable = false)
+-    private String name;
++    private String expenseName;
+ 
+     @JsonIgnore
+     @Column(name = "expense_cost", nullable = false)
+@@ -83,7 +83,7 @@
+     @Override
+     public String toString() {
+         return "Expense{" +
+-                "name='" + name + '\'' +
++                "name='" + expenseName + '\'' +
+                 ", totalCost=" + totalCost +
+                 ", expenseBalance=" + expenseBalance +
+                 ", equalSplit=" + equalSplit +
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/repository/ExpenseRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/repository/ExpenseRepository.java b/SplitwiseProject/src/main/java/com/splitwiseapp/repository/ExpenseRepository.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/repository/ExpenseRepository.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/repository/ExpenseRepository.java	
+@@ -4,5 +4,6 @@
+ import org.springframework.data.jpa.repository.JpaRepository;
+ 
+ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
+-    Expense findByName(String name);
++    Expense findByExpenseName(String expenseName);
++    Expense findByExpenseNameAndEventId(String expenseName, Integer eventId);
+ }
+\ No newline at end of file
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/dto/expenses/ExpenseDto.java
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/dto/expenses/ExpenseDto.java b/SplitwiseProject/src/main/java/com/splitwiseapp/dto/expenses/ExpenseDto.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/dto/expenses/ExpenseDto.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/dto/expenses/ExpenseDto.java	
+@@ -1,21 +1,44 @@
+ package com.splitwiseapp.dto.expenses;
+ 
++import jakarta.validation.constraints.Digits;
++import jakarta.validation.constraints.NotBlank;
+ import jakarta.validation.constraints.NotEmpty;
++import jakarta.validation.constraints.NotNull;
+ import lombok.*;
+ 
+-@Getter
+-@Setter
+ @AllArgsConstructor
+ @NoArgsConstructor
+ @ToString
+ public class ExpenseDto {
+ 
+-    @NotEmpty
+-    private String name;
++    private String expenseName;
+ 
+-    @NotEmpty
+     private String cost;
+ 
+     @NotEmpty
+     private String participantUsername;
++
++    public String getExpenseName() {
++        return expenseName;
++    }
++
++    public String getCost() {
++        return cost;
++    }
++
++    public String getParticipantUsername() {
++        return participantUsername;
++    }
++
++    public void setExpenseName(String expenseName) {
++        this.expenseName = expenseName;
++    }
++
++    public void setCost(String cost) {
++        this.cost = cost;
++    }
++
++    public void setParticipantUsername(String participantUsername) {
++        this.participantUsername = participantUsername;
++    }
+ }
+Index: SplitwiseProject/src/main/resources/templates/events.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/events.html b/SplitwiseProject/src/main/resources/templates/events.html
+--- a/SplitwiseProject/src/main/resources/templates/events.html	
++++ b/SplitwiseProject/src/main/resources/templates/events.html	
+@@ -11,7 +11,6 @@
+ <body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container-fluid">
+-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+@@ -19,10 +18,18 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
++                </li>
++            </ul>
++            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
++                <li class="nav-item ms-auto">
++                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
+                 </li>
+             </ul>
+         </div>
+Index: SplitwiseProject/src/main/resources/templates/profile.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/profile.html b/SplitwiseProject/src/main/resources/templates/profile.html
+--- a/SplitwiseProject/src/main/resources/templates/profile.html	
++++ b/SplitwiseProject/src/main/resources/templates/profile.html	
+@@ -1,4 +1,3 @@
+-
+ <!DOCTYPE html>
+ <html lang="en"
+       xmlns:th="http://www.thymeleaf.org"
+@@ -20,13 +19,13 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
+-                </li>
+-                <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
+                 </li>
+             </ul>
+             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
+                 <li class="nav-item ms-auto">
+                     <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
+                 </li>
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/entity/Payoff.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Payoff.java b/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Payoff.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Payoff.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/entity/Payoff.java	
+@@ -37,7 +37,7 @@
+     @Override
+     public String toString() {
+         return "Payoff{" +
+-                "expensePaid= " + expensePaid.getName() +
++                "expensePaid= " + expensePaid.getExpenseName() +
+                 ", userPaying= " + userPaying.getFirstName() +
+                 ", payoffAmount=" + payoffAmount +
+                 '}';
+Index: SplitwiseProject/src/main/resources/templates/new-event.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/resources/templates/new-event.html b/SplitwiseProject/src/main/resources/templates/new-event.html
+--- a/SplitwiseProject/src/main/resources/templates/new-event.html	
++++ b/SplitwiseProject/src/main/resources/templates/new-event.html	
+@@ -11,7 +11,6 @@
+ <body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container-fluid">
+-        <a class="navbar-brand" th:href="@{/profile}">Profile</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+@@ -19,12 +18,18 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+-                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                    <a class="nav-link active" aria-current="page" th:href="@{/profile}">Profile</a>
+                 </li>
+-            </ul>
+-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+                     <a class="nav-link active" aria-current="page" th:href="@{/events}">Events</a>
++                </li>
++            </ul>
++            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
++                </li>
++                <li class="nav-item ms-auto">
++                    <h5 class="nav-link active" style="color: orange" aria-current="page" th:text = "'Logged in as: ' + ${user.firstName}"></h5>
+                 </li>
+             </ul>
+         </div>
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/controller/ExpenseController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/controller/ExpenseController.java b/SplitwiseProject/src/main/java/com/splitwiseapp/controller/ExpenseController.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/controller/ExpenseController.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/controller/ExpenseController.java	
+@@ -9,6 +9,7 @@
+ import com.splitwiseapp.service.expenses.ExpenseService;
+ import com.splitwiseapp.service.payoffs.PayoffService;
+ import com.splitwiseapp.service.users.UserService;
++import jakarta.validation.Valid;
+ import lombok.Data;
+ import org.apache.commons.lang3.StringUtils;
+ import org.springframework.security.core.Authentication;
+@@ -16,11 +17,14 @@
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+ import org.springframework.validation.BindingResult;
++import org.springframework.validation.FieldError;
+ import org.springframework.web.bind.annotation.*;
+ 
+ import java.math.BigDecimal;
+ import java.math.RoundingMode;
+ import java.util.*;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ @Data
+ @Controller
+@@ -34,32 +38,61 @@
+     private final ExpenseRepository expenseRepository;
+     private final PayoffService payoffService;
+ 
+-    @GetMapping("/events/{eventId}/newExpense")
++    @GetMapping("/events/{eventId}/saveExpense")
+     public String showExpenseForm(@PathVariable Integer eventId, Model model) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
++
+         Event event = eventService.findById(eventId);
+         List<User> eventUsers = event.getEventUsers();
+ 
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("event", event);
+         model.addAttribute("eventUsers", eventUsers);
+         model.addAttribute("newExpense", new ExpenseDto());
+         return "new-expense";
+     }
+ 
+-    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
+-    public String deleteExpense(@PathVariable Integer expenseId,
+-                                @PathVariable Integer eventId) {
+-        expenseService.deleteById(expenseId);
+-        return "redirect:/events/" + eventId + "/expenses";
+-    }
+-
+-    @PostMapping("/events/{id}/saveExpense")
+-    public String createExpense(@ModelAttribute("expenses") ExpenseDto expenseDto,
+-                                @PathVariable Integer id,
++    @PostMapping("/events/{eventId}/saveExpense")
++    public String createExpense(@ModelAttribute("newExpense")  ExpenseDto expenseDto,
++                                @PathVariable Integer eventId,
+                                 BindingResult result,
+                                 Model model) {
+         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+         String username = authentication.getName();
+         User loggedInUser = userRepository.findByUsername(username);
++        model.addAttribute("user", loggedInUser);
++
++        Event event = eventService.findById(eventId);
++        model.addAttribute("event", event);
++
++        List<User> eventUsers = event.getEventUsers();
++        model.addAttribute("eventUsers", eventUsers);
++
++        Expense existingExpense = expenseService.findByExpenseNameAndEventId(expenseDto.getExpenseName(), eventId);
++
++        if(existingExpense != null && existingExpense.getExpenseName() != null && !existingExpense.getExpenseName().isEmpty()){
++            result.addError(new FieldError("newExpense", "expenseName",
++                    "Expense '" +  existingExpense.getExpenseName() + "' already exists." ));
++        }
++
++        if (expenseDto.getExpenseName().isBlank()) {
++            result.addError(new FieldError("newExpense", "expenseName",
++                    "Event name field cannot be empty." ));
++        }
++
++        Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
++        Matcher matcher = pattern.matcher(expenseDto.getCost());
++
++        if (!matcher.matches()) {
++            result.addError(new FieldError("newExpense", "cost",
++                    "Enter proper value for expense amount."));
++        }
++
++        if (result.hasErrors()) {
++            return "new-expense";
++        }
+ 
+         TreeSet<User> expenseParticipants = getUsers(expenseDto);
+         List<Payoff> expensePayoffs = new ArrayList<>();
+@@ -73,10 +106,10 @@
+         });
+ 
+         Expense expense = Expense.builder()
+-                .name(expenseDto.getName())
++                .expenseName(expenseDto.getExpenseName())
+                 .totalCost(cost)
+                 .equalSplit(costPerParticipant)
+-                .event(eventService.findById(id))
++                .event(eventService.findById(eventId))
+                 .participants(expenseParticipants)
+                 .payoffAmountPerUser(new HashMap<>())
+                 .balancePerUser(new HashMap<>())
+@@ -90,22 +123,23 @@
+         expensePayoffs.add(defaultPayoff);
+         expense.setPayoffs(expensePayoffs);
+ 
+-
+         model.addAttribute("expenseParticipants", expenseParticipants);
+ 
+-        if (doesExpenseWithGivenNameAlreadyExist(expenseDto)) {
+-            result.rejectValue("name", "That expense already exists or given name is incorrect.",
+-                    "That expense already exists or given name is incorrect.");
+-        }
+-        if (result.hasErrors()) {
+-            model.addAttribute("expenses", expenseDto);
+-            return "redirect:/events/{id}/expenses";
+-        }
+-
+         expenseService.saveExpense(expense);
+         System.out.println(expense);
++        return "redirect:/events/" + eventId + "/expenses";
++    }
+ 
+-        return "redirect:/events/" + id + "/expenses";
++    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
++    public String deleteExpense(@PathVariable Integer expenseId,
++                                @PathVariable Integer eventId,
++                                Model model) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
++        model.addAttribute("user", loggedInUser);
++        expenseService.deleteById(expenseId);
++        return "redirect:/events/" + eventId + "/expenses";
+     }
+ 
+     @GetMapping("/events/{eventId}/expenses/{expenseId}/users/{userId}")
+@@ -176,9 +210,4 @@
+         return participants;
+     }
+ 
+-    private boolean doesExpenseWithGivenNameAlreadyExist(ExpenseDto expenseDto) {
+-        Expense expense = expenseRepository.findByName(expenseDto.getName());
+-        return expense != null && !StringUtils.isBlank(expense.getName());
+-    }
+-
+ }
+Index: SplitwiseProject/src/main/java/com/splitwiseapp/controller/EventController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/SplitwiseProject/src/main/java/com/splitwiseapp/controller/EventController.java b/SplitwiseProject/src/main/java/com/splitwiseapp/controller/EventController.java
+--- a/SplitwiseProject/src/main/java/com/splitwiseapp/controller/EventController.java	
++++ b/SplitwiseProject/src/main/java/com/splitwiseapp/controller/EventController.java	
+@@ -5,11 +5,13 @@
+ import com.splitwiseapp.entity.Event;
+ import com.splitwiseapp.entity.Expense;
+ import com.splitwiseapp.entity.User;
++import com.splitwiseapp.repository.UserRepository;
+ import com.splitwiseapp.service.events.EventService;
+ import com.splitwiseapp.service.expenses.ExpenseService;
+ import com.splitwiseapp.service.users.UserService;
+ import lombok.AllArgsConstructor;
+ import org.springframework.security.core.Authentication;
++import org.springframework.security.core.context.SecurityContextHolder;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+ import org.springframework.validation.BindingResult;
+@@ -29,14 +31,19 @@
+     private final EventService eventService;
+     private final UserService userService;
+     private final ExpenseService expenseService;
++    private final UserRepository userRepository;
+ 
+     @GetMapping("/events")
+-    public String events(Model model, Authentication authentication) {
++    public String events(Model model) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++
+         List<Event> events = eventService.findAllEvents();
++        User loggedInUser = userRepository.findByUsername(username);
+ 
+         model.addAttribute("events", events);
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("loggedInUser", authentication.getName());
+-
+         return "events";
+     }
+ 
+@@ -47,13 +54,15 @@
+         return "event";
+     }
+ 
+-
+-
+     @GetMapping("/newEvent")
+     public String showEventAddingForm(Model model){
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
+ 
+         List<UserDto> allUsers = userService.findAllUsers();
+ 
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("newEvent", new EventDto());
+         model.addAttribute("allUsers", allUsers);
+         return "new-event";
+@@ -61,9 +70,14 @@
+ 
+     @PostMapping("/newEvent")
+     public String addEvent(@ModelAttribute("newEvent") EventDto eventDto,
++                           Model model,
+                            BindingResult result) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
+ 
+         Event existingEvent = eventService.findByEventName(eventDto.getEventName());
++        model.addAttribute("user", loggedInUser);
+ 
+         if(existingEvent != null && existingEvent.getEventName() != null && !existingEvent.getEventName().isEmpty()){
+             result.addError(new FieldError("newEvent", "eventName",
+@@ -93,12 +107,16 @@
+ 
+     @GetMapping("/delete")
+     public String deleteEvent(@RequestParam("eventId") Integer eventId,
+-                              Authentication authentication,
+                               Model model) {
+ 
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
++
+         Event event = eventService.findById(eventId);
+         User user = userService.getCurrentlyLoggedInUser();
+ 
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("loggedInUser", authentication.getName());
+ 
+         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
+@@ -110,12 +128,15 @@
+ 
+         List<Event> events = eventService.findAllEvents();
+         model.addAttribute("events", events);
+-
+         return "events";
+     }
+ 
+     @GetMapping("/events/{eventId}/users")
+     public String showEventUsers(@PathVariable("eventId") Integer eventId, Model model) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
++
+         Event event = eventService.findById(eventId);
+         List<User> allUsers = userService.findAll();
+         List<User> eventUsers = event.getEventUsers();
+@@ -131,6 +152,7 @@
+             }
+         }
+ 
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("add_id", eventId);
+         model.addAttribute("remove_id", eventId);
+         model.addAttribute("eventUsers", eventUsers);
+@@ -141,6 +163,10 @@
+ 
+     @GetMapping("/events/{eventId}/expenses")
+     public String showEventExpenses(@PathVariable("eventId") Integer eventId, Model model) {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        String username = authentication.getName();
++        User loggedInUser = userRepository.findByUsername(username);
++
+         Event event = eventService.findById(eventId);
+         List<User> allUsers = userService.findAll();
+         List<User> eventUsers = event.getEventUsers();
+@@ -165,6 +191,7 @@
+         event.setEventBalance(updatedBalance);
+         eventService.save(event);
+ 
++        model.addAttribute("user", loggedInUser);
+         model.addAttribute("event", event);
+         model.addAttribute("add_id", eventId);
+         model.addAttribute("remove_id", eventId);
+@@ -197,8 +224,8 @@
+         return "redirect:/events/" + eventId + "/users";
+     }
+ 
+-    @GetMapping("/events/{eventId}/transferOwner/{userId}")
+-    public String transferOwner(@PathVariable("eventId") Integer eventId,
++    @GetMapping("/events/{eventId}/setAsEventOwner/{userId}")
++    public String setAsEventOwner(@PathVariable("eventId") Integer eventId,
+             @PathVariable("userId") Integer userId,
+             Authentication authentication,
+             Model model) {
+@@ -213,28 +240,6 @@
+         return "redirect:/events";
+     }
+ 
+-    @GetMapping("/events/{eventId}/addExpense")
+-    public String addExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
+-        Event event = eventService.findById(eventId);
+-        Expense expense = expenseService.findById(expenseId);
+-        event.addExpense(expense);
+-        eventService.save(event);
+-        expense.addEvent(event);
+-        expenseService.saveExpense(expense);
+-        return "redirect:/events/" + eventId + "/expenses";
+-    }
+-
+-    @GetMapping("/events/{eventId}/removeExpense")
+-    public String removeExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
+-        Event event = eventService.findById(eventId);
+-        Expense expense = expenseService.findById(expenseId);
+-        event.removeExpense(expense);
+-        eventService.save(event);
+-        expense.removeEvent();
+-        expenseService.saveExpense(expense);
+-        return "redirect:/events/" + eventId + "/expenses";
+-    }
+-
+     private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
+         return eventExpenses.stream()
+                 .flatMap(expense -> expense.getBalancePerUser().values().stream())

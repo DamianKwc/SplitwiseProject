@@ -34,8 +34,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> findEventsByName(String eventName) {
+        return eventRepository.findByEventNameContainingIgnoreCase(eventName);
+    }
+
+    @Override
     public void deleteById(Integer eventId) {
         eventRepository.deleteById(eventId);
     }
+
 
 }

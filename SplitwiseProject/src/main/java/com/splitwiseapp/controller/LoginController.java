@@ -11,10 +11,7 @@ public class LoginController {
 
     private final UserService userService;
 
-    @GetMapping("/index")
-    public String home() {
-        return "index";
-    }
+
 
     @GetMapping("/")
     public String redirectToLoginPage() {

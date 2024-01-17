@@ -14,6 +14,8 @@ import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -146,7 +148,7 @@ public class ExpenseController {
 
         model.addAttribute("paidOffAmount", paidOffAmount);
 
-        BigDecimal paidOffFromInput = paidOffAmount == null
+            BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
                 : new BigDecimal(paidOffAmount.replaceAll(",", ".")).setScale(2, RoundingMode.CEILING);
         BigDecimal userBalance = userService.calculateUserBalance(foundUser.getId()).add(paidOffFromInput);

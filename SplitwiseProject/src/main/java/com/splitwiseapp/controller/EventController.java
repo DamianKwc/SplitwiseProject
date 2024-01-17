@@ -30,8 +30,17 @@ public class EventController {
     private final EventMapper eventMapper;
 
     @GetMapping("/events")
-    public String events(Model model) {
-        List<Event> events = eventService.findAllEvents();
+    public String events(@RequestParam(name = "eventName", required = false) String eventName,
+                         Model model) {
+
+        List<Event> events;
+
+        if (eventName != null && !eventName.isEmpty()) {
+            events = eventService.findEventsByName(eventName);
+        } else {
+            events = eventService.findAllEvents();
+        }
+
         model.addAttribute("events", events);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "events";
@@ -123,7 +132,9 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}/expenses")
-    public String showEventExpenses(@PathVariable("eventId") Integer eventId, Model model) {
+    public String showEventExpenses(@PathVariable("eventId") Integer eventId,
+                                    Model model) {
+
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventUsers = event.getEventUsers();
@@ -157,6 +168,7 @@ public class EventController {
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+
         return "expenses";
     }
 
