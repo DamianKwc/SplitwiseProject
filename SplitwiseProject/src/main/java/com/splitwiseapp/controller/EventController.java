@@ -90,7 +90,7 @@ public class EventController {
 
     @GetMapping("/delete")
     public String deleteEvent(@RequestParam("eventId") Integer eventId, Model model) {
-        Event event = eventService.findById(eventId);
+        Event event = eventService.findById(eventId); //TODO: Przy kasowaniu eventu, leci NoSuchElementException - obsłużyć jakoś
         User user = userService.getCurrentlyLoggedInUser();
 
         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
@@ -110,21 +110,21 @@ public class EventController {
     public String showEventUsers(@PathVariable("eventId") Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
-        List<User> eventUsers = event.getEventUsers();
+        List<User> eventMembers = event.getEventMembers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
         model.addAttribute("event", event);
 
         for (User u : allUsers) {
-            if (!eventUsers.contains(u)) {
+            if (!eventMembers.contains(u)) {
                 remainingUsers.add(u);
             }
         }
 
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
-        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
@@ -137,7 +137,7 @@ public class EventController {
 
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
-        List<User> eventUsers = event.getEventUsers();
+        List<User> eventMembers = event.getEventMembers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
         User user = userService.getCurrentlyLoggedInUser();
@@ -150,7 +150,7 @@ public class EventController {
         }
 
         for (User u : allUsers) {
-            if (!eventUsers.contains(u)) {
+            if (!eventMembers.contains(u)) {
                 remainingUsers.add(u);
             }
         }
@@ -163,7 +163,7 @@ public class EventController {
         model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
-        model.addAttribute("eventUsers", eventUsers);
+        model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
@@ -176,7 +176,7 @@ public class EventController {
     public String addUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
-        event.addUser(user);
+        event.addEventMember(user);
         eventService.save(event);
         user.addEvent(event);
         userService.save(user);
@@ -187,7 +187,7 @@ public class EventController {
     public String removeUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
-        event.removeUser(user);
+        event.removeEventMember(user);
         eventService.save(event);
         user.removeEvent(event);
         userService.save(user);

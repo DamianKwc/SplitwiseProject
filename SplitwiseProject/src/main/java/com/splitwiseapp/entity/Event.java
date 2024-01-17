@@ -47,18 +47,18 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private List<User> eventUsers = new ArrayList<>();
+    private List<User> eventMembers = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH,CascadeType.REMOVE})
     private List<Expense> expenses;
 
-    public void addUser(User user) {
-        this.eventUsers.add(user);
+    public void addEventMember(User user) {
+        this.eventMembers.add(user);
     }
 
-    public void removeUser(User user) {
-        this.eventUsers.remove(user);
+    public void removeEventMember(User user) {
+        this.eventMembers.remove(user);
     }
 
     public void addExpense(Expense expense) {
@@ -75,7 +75,7 @@ public class Event {
                 "eventName='" + eventName + '\'' +
                 ", eventBalance=" + eventBalance +
                 ", owner=" + owner.getFirstName() +
-                ", eventUsers=" + eventUsers +
+                ", eventMembers=" + eventMembers +
                 ", expenses=" + expenses +
                 '}';
     }

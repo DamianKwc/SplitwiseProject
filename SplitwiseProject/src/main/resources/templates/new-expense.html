@@ -64,7 +64,7 @@
                             <select id="participantsDropdown" class="form-select" multiple
                                     th:field="*{participantUsername}">
                                 <option value="0" selected disabled>Choose all participants of this expense</option>
-                                <option th:each="user : ${eventUsers}"
+                                <option th:each="user : ${eventMembers}"
                                         th:value="${user.username}"
                                         th:text="${user.username}"></option>
                             </select>

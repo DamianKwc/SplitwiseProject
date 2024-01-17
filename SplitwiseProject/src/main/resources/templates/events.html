@@ -87,9 +87,9 @@
                     Expenses
                 </a>
                 <th:block th:if="${event.owner.username eq loggedInUserName}">
-                    <a th:switch="${#lists.size(event.eventUsers)}">
+                    <a th:switch="${#lists.size(event.eventMembers)}">
                         <span th:case="0">
-                            <a th:href="@{'/events/'+${event.id}+'/addUser?userId=' + ${event.owner.id}}"
+                            <a th:href="@{'/events/'+${event.id}+'/users'}"
                                class="btn btn-sm btn-primary">
                                 Add participants
                             </a>
