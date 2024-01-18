@@ -1,6 +1,6 @@
 package com.splitwiseapp.dto.user;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -10,15 +10,13 @@ import lombok.*;
 @ToString
 public class UserDto {
 
-    private int idUser;
-
-    @NotEmpty
+    @NotBlank
     private String firstName;
 
-    @NotEmpty
+    @NotBlank
     private String username;
 
-    @NotEmpty
+    @NotBlank
     private String password;
 
     }

@@ -19,9 +19,9 @@ public class SecurityConfig {
         @Autowired
         private UserDetailsService userDetailsService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+        public SecurityConfig(UserDetailsService userDetailsService) {
+            this.userDetailsService = userDetailsService;
+        }
 
         @Bean
         public static PasswordEncoder passwordEncoder(){
@@ -34,12 +34,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .requestMatchers("/register/**").permitAll()
-                                .requestMatchers("/login").permitAll()
                                 .anyRequest().authenticated()
                 ).formLogin(
                         form -> form
                                 .loginPage("/login")
-                                .loginProcessingUrl("/login")
                                 .defaultSuccessUrl("/profile")
                                 .permitAll()
                 ).logout(

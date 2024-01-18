@@ -1,7 +1,6 @@
 package com.splitwiseapp.dto.expense;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -11,12 +10,12 @@ import lombok.*;
 @ToString
 public class ExpenseDto {
 
-    @NotNull(message = "Name cannot be null")
+    @NotBlank
     private String name;
 
-    @NotNull(message = "Name cannot be null")
+    @NotBlank
     private String cost;
 
-    @NotNull(message = "Name cannot be null")
+    @NotBlank
     private String participantUsername;
 }

@@ -107,7 +107,8 @@
                             Remove from Event
                         </a>
                         <br>
-                        <a th:href="@{'/events/'+${event.id}+'/setAsEventOwner/'+${user.id}}"
+                        <a th:if="${event.owner.id != user.id}"
+                           th:href="@{'/events/'+${event.id}+'/setAsEventOwner/'+${user.id}}"
                            onclick="return confirm('Are you sure you want to change owner?');">
                             Set As Event Owner
                         </a>
