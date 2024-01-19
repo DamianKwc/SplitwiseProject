@@ -1,6 +1,6 @@
 package com.splitwiseapp.service.users;
 
-import com.splitwiseapp.dto.expense.ExpenseDto;
+import com.splitwiseapp.dto.expense.SplitExpenseDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
@@ -71,10 +71,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public TreeSet<User> getUsersByNames(ExpenseDto expenseDto) {
+    public TreeSet<User> getUsersByNames(SplitExpenseDto splitExpenseDto) {
         TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
-        if (expenseDto.getParticipantUsername() != null) {
-            String[] splitUsernames = expenseDto.getParticipantUsername().split("[,]", 0);
+        if (splitExpenseDto.getParticipantUsername() != null) {
+            String[] splitUsernames = splitExpenseDto.getParticipantUsername().split("[,]", 0);
             for (String username : splitUsernames) {
                 User foundUser = this.findByUsername(username);
                 participants.add(foundUser);

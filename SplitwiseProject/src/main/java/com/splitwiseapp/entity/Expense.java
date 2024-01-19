@@ -39,6 +39,10 @@ public class Expense {
 
     @Transient
     @Builder.Default
+    private Map<Integer, BigDecimal> debtPerUser = new HashMap<>();
+
+    @Transient
+    @Builder.Default
     private Map<Integer, BigDecimal> payoffAmountPerUser = new HashMap<>();
 
     @Transient

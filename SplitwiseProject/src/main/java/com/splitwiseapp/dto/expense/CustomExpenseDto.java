@@ -1,6 +1,6 @@
 package com.splitwiseapp.dto.expense;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 @Getter
@@ -8,14 +8,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ExpenseDto {
+public class CustomExpenseDto {
 
-    @NotBlank
+    @NotEmpty
     private String name;
 
-    @NotBlank
+    @NotEmpty
     private String cost;
-
-    @NotBlank
-    private String participantUsername;
 }

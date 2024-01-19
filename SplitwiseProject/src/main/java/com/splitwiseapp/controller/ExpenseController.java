@@ -1,6 +1,7 @@
 package com.splitwiseapp.controller;
 
-import com.splitwiseapp.dto.expense.ExpenseDto;
+import com.splitwiseapp.dto.expense.CustomExpenseDto;
+import com.splitwiseapp.dto.expense.SplitExpenseDto;
 import com.splitwiseapp.dto.expense.ExpenseMapper;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
@@ -42,16 +43,27 @@ public class ExpenseController {
     private final PayoffService payoffService;
     private final ExpenseMapper expenseMapper;
 
-    @GetMapping("/events/{eventId}/newExpense")
-    public String showExpenseForm(@PathVariable Integer eventId, Model model) {
+    @GetMapping("/events/{eventId}/newSplitExpense")
+    public String showSplitExpenseForm(@PathVariable Integer eventId, Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventMembers = event.getEventMembers();
 
         model.addAttribute("event", event);
         model.addAttribute("eventMembers", eventMembers);
-        model.addAttribute("newExpense", new ExpenseDto());
+        model.addAttribute("newSplitExpense", new SplitExpenseDto());
+        return "new-split-expense";
+    }
+
+    @GetMapping("/events/{eventId}/newCustomExpense")
+    public String showCustomExpenseForm(@PathVariable Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
+        List<User> eventMembers = event.getEventMembers();
+
+        model.addAttribute("event", event);
+        model.addAttribute("eventMembers", eventMembers);
+        model.addAttribute("newCustomExpense", new CustomExpenseDto());
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
-        return "new-expense";
+        return "new-custom-expense";
     }
 
     @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
@@ -74,11 +86,11 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @PostMapping("/events/{eventId}/saveExpense")
-    public String createExpense(@ModelAttribute("newExpense") ExpenseDto expenseDto,
-                                @PathVariable Integer eventId,
-                                BindingResult result,
-                                Model model) {
+    @PostMapping("/events/{eventId}/saveSplitExpense")
+    public String createSplitExpense(@ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
+                                     @PathVariable Integer eventId,
+                                     BindingResult result,
+                                     Model model) {
         Event foundEvent = eventService.findById(eventId);
         model.addAttribute("event", foundEvent);
 
@@ -88,23 +100,23 @@ public class ExpenseController {
         List<User> eventMembers = foundEvent.getEventMembers();
         model.addAttribute("eventMembers", eventMembers);
 
-        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(expenseDto.getName(), eventId));
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
         existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
                 "Expense '" + expense.getName() + "' already exists.")));
 
-        if (expenseDto.getName().isBlank()) {
+        if (splitExpenseDto.getName().isBlank()) {
             result.addError(new FieldError("newExpense", "name",
                     "Expense name field cannot be empty."));
         }
 
         Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
-        Matcher matcher = pattern.matcher(expenseDto.getCost());
+        Matcher matcher = pattern.matcher(splitExpenseDto.getCost());
 
         if (!matcher.matches()) {
             result.addError(new FieldError("newExpense", "cost",
                     "Enter proper value for expense amount."));
         }
-        if (expenseDto.getCost().isEmpty()) {
+        if (splitExpenseDto.getCost().isEmpty()) {
             result.addError(new FieldError("newExpense", "cost",
                     "Expense amount field cannot be empty."));
         }
@@ -112,8 +124,8 @@ public class ExpenseController {
         if (result.hasErrors()) {
             return "new-expense";
         }
-        Expense expense = expenseMapper.mapToDomain(foundEvent, expenseDto);
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(expenseDto);
+        Expense expense = expenseMapper.mapSplitExpenseToDomain(foundEvent, splitExpenseDto);
+        TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
         List<Payoff> expensePayoffs = new ArrayList<>();
 
         Payoff defaultPayoff = Payoff.builder()
@@ -125,6 +137,67 @@ public class ExpenseController {
         expense.setPayoffs(expensePayoffs);
 
         model.addAttribute("expenseParticipants", expenseParticipants);
+
+        expenseService.save(expense);
+
+        return "redirect:/events/" + eventId + "/expenses";
+    }
+
+    @PostMapping("/events/{eventId}/saveCustomExpense")
+    public String createCustomExpense(@ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
+                                    @PathVariable Integer eventId,
+                                    @RequestParam(value = "userId") Integer userId,
+                                    @RequestParam(value = "userContribution") List<String> usersContribution,
+                                    BindingResult result,
+                                    Model model) {
+        Event foundEvent = eventService.findById(eventId);
+        model.addAttribute("event", foundEvent);
+
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+
+        List<User> eventMembers = foundEvent.getEventMembers();
+        model.addAttribute("eventMembers", eventMembers);
+
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
+        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
+                "Expense '" + expense.getName() + "' already exists.")));
+
+        if (customExpenseDto.getName().isBlank()) {
+            result.addError(new FieldError("newExpense", "name",
+                    "Expense name field cannot be empty."));
+        }
+
+        Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
+        Matcher matcher = pattern.matcher(customExpenseDto.getCost());
+
+        if (!matcher.matches()) {
+            result.addError(new FieldError("newExpense", "cost",
+                    "Enter proper value for expense amount."));
+        }
+        if (customExpenseDto.getCost().isEmpty()) {
+            result.addError(new FieldError("newExpense", "cost",
+                    "Expense amount field cannot be empty."));
+        }
+
+        if (result.hasErrors()) {
+            return "new-expense";
+        }
+        //TODO: W walidacji sprawdzać, czy przekazana przez usera suma "contributionów" nie przekracza sumy wprowadzanego wydatku
+        Expense expense = expenseMapper.mapCustomExpenseDtoToDomain(foundEvent, customExpenseDto);
+//        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
+//        TODO: dorobić metodę w UserService, jeśli chcemy dla tego typu wydatku również pobierać participantów z frontu
+        List<Payoff> expensePayoffs = new ArrayList<>();
+
+        Payoff defaultPayoff = Payoff.builder()
+                .expensePaid(expense)
+                .userPaying(loggedInUser)
+                .payoffAmount(BigDecimal.ZERO)
+                .build();
+        expensePayoffs.add(defaultPayoff);
+        expense.setPayoffs(expensePayoffs);
+
+//        model.addAttribute("expenseParticipants", expenseParticipants);
 
         expenseService.save(expense);
 

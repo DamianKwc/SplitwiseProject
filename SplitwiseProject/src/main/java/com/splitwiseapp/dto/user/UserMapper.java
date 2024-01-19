@@ -1,6 +1,6 @@
 package com.splitwiseapp.dto.user;
 
-import com.splitwiseapp.dto.expense.ExpenseDto;
+import com.splitwiseapp.dto.expense.SplitExpenseDto;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.Role;
 import com.splitwiseapp.entity.User;
@@ -34,7 +34,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static ExpenseDto mapToDto(Expense expense) {
+    public static SplitExpenseDto mapToDto(Expense expense) {
         return null;
     }
 

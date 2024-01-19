@@ -43,8 +43,11 @@
 
                 <h2 th:text="'Total Balance: ' + ${updatedBalance}"></h2>
 
-                <a th:href="@{'/events/' + ${eventId} + '/newExpense'}" class="btn btn-primary">
-                    Create Expense
+                <a th:href="@{'/events/' + ${eventId} + '/newSplitExpense'}" class="btn btn-primary">
+                    Create Split Expense
+                </a>
+                <a th:href="@{'/events/' + ${eventId} + '/newCustomExpense'}" class="btn btn-primary">
+                    Create Custom Expense
                 </a>
                 <a th:href="@{'/events'}" class="btn btn-secondary">
                     Back to Events List
