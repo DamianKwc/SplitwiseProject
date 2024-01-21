@@ -1,5 +1,6 @@
 package com.splitwiseapp.service.users;
 
+import com.splitwiseapp.dto.expense.CustomExpenseDto;
 import com.splitwiseapp.dto.expense.SplitExpenseDto;
 import com.splitwiseapp.entity.User;
 import org.springframework.stereotype.Service;
@@ -19,4 +20,5 @@ public interface UserService {
     User getCurrentlyLoggedInUser();
     BigDecimal calculateUserBalance(Integer userId);
     TreeSet<User> getUsersByNames(SplitExpenseDto splitExpenseDto);
+    TreeSet<User> getUsersByNames(CustomExpenseDto customExpenseDto);
 }

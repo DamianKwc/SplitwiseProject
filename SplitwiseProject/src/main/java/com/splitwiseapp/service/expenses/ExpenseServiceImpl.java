@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -59,6 +60,15 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    public Map<Integer, BigDecimal> mapUserToCost(Expense expense) {
+        Map<Integer, BigDecimal> mapUserPerCost = new HashMap<>();
+        expense.getParticipants().forEach(participant -> mapUserPerCost.put(participant.getId(),
+                sumParticipantCosts(expense, participant)
+        ));
+        return mapUserPerCost;
+    }
+
+    @Override
     public Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense) {
         Map<Integer, BigDecimal> mapUserPerPayoffsAmount = new HashMap<>();
         expense.getParticipants().forEach(participant -> mapUserPerPayoffsAmount.put(participant.getId(),
@@ -86,15 +96,31 @@ public class ExpenseServiceImpl implements ExpenseService {
         return expenseRepository.findByNameAndEventId(expenseName, eventId);
     }
 
+    private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
+        BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
+        Map<Integer, BigDecimal> costPerUser = expense.getCostPerUser();
+        BigDecimal participantPayoff = costPerUser.get(participant.getId());
+
+        if (costPerUser.containsKey(participant.getId()) && !Objects.equals(participantPayoff, BigDecimal.ZERO)) {
+            return payoffsSum.subtract(participantPayoff);
+        }
+
+        return payoffsSum;
+    }
+
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
         return expense.getPayoffs().stream()
+                .filter(Objects::nonNull)
                 .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
                 .map(Payoff::getPayoffAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
-        BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
-        return payoffsSum.subtract(expense.getCostPerParticipant());
+    private BigDecimal sumParticipantCosts(Expense expense, User participant) {
+        return expense.getCostPerUser().entrySet().stream()
+                .filter(costMap -> participant.getId().equals(costMap.getKey()))
+                .map(Map.Entry::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
 }

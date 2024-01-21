@@ -5,7 +5,9 @@ import com.splitwiseapp.entity.Payoff;
 import com.splitwiseapp.entity.User;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class TestData {
@@ -44,9 +46,15 @@ public class TestData {
             .build();
 
     public static Expense testExpense = Expense.builder()
-            .costPerParticipant(BigDecimal.valueOf(30))
+            .costPerUser(prepareCostPerUser())
             .payoffs(List.of(payoff_1, payoff_2, payoff_3))
             .participants(Set.of(user_1, user_2, user_3))
             .build();
+
+    private static Map<Integer, BigDecimal> prepareCostPerUser() {
+        Map<Integer, BigDecimal> costPerUser = new HashMap<>();
+        costPerUser.put(1, BigDecimal.valueOf(30));
+        return costPerUser;
+    }
 
 }

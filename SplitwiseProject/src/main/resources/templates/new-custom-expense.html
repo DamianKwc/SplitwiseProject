@@ -60,12 +60,12 @@
                         </div>
                         <div class="form-group mb-3">
                             <label class="control-label">Define contribution of each participant</label>
-                            <div class="input-group mb-3" th:each="user : ${eventMembers}">
-                                <input disabled type="text" id="userName" name="userName" th:value="${user.username}"
-                                       class="form-control"/>
+                            <ul class="list-group" th:each="user : ${eventMembers}">
+                                <li class="list-group-item list-group-item-dark" th:text="${user.username}"></li>
                                 <input type="text" id="userContribution" name="userContribution"
+                                       th:field="*{userContribution[__${user.id}__]}"
                                        class="form-control"/>
-                            </div>
+                            </ul>
                         </div>
                         <br>
                         <div class="form-group mb-3">

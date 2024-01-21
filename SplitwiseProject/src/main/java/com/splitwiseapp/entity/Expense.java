@@ -33,17 +33,17 @@ public class Expense {
     @Column(name = "expenseBalance")
     private BigDecimal expenseBalance;
 
-    @JsonIgnore
-    @Column(name = "cost_per_participant")
-    private BigDecimal costPerParticipant;
-
     @Transient
     @Builder.Default
     private Map<Integer, BigDecimal> debtPerUser = new HashMap<>();
 
     @Transient
     @Builder.Default
-    private Map<Integer, BigDecimal> payoffAmountPerUser = new HashMap<>();
+    private Map<Integer, BigDecimal> costPerUser = new HashMap<>();
+
+    @Transient
+    @Builder.Default
+    private Map<Integer, BigDecimal> payoffPerUser = new HashMap<>();
 
     @Transient
     @Builder.Default
@@ -88,7 +88,6 @@ public class Expense {
                 "name='" + name + '\'' +
                 ", totalCost=" + totalCost +
                 ", expenseBalance=" + expenseBalance +
-                ", costPerParticipant=" + costPerParticipant +
                 ", event=" + event.getEventName() +
                 ", participants=" + participants +
                 ", payoffs=" + payoffs +

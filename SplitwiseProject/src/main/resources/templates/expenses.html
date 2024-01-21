@@ -83,10 +83,17 @@
                                     </span>
                                 </p>
                             </div>
+                            <p th:if="${expense.participants.isEmpty()}">No participants</p>
                         </td>
-                        <td th:text="${expense.costPerParticipant}"></td>
                         <td>
-                            <div th:each="entry : ${expense.payoffAmountPerUser}">
+                            <div th:each="entry : ${expense.costPerUser}">
+                                <p>
+                                    <span th:text="${entry.value}"></span>
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div th:each="entry : ${expense.payoffPerUser}">
                                 <p>
                                     <span th:text="${entry.value}"></span>
                                 </p>

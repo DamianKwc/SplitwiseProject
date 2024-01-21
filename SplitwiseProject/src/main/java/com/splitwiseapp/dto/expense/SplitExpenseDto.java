@@ -18,4 +18,5 @@ public class SplitExpenseDto {
 
     @NotBlank
     private String participantUsername;
+
 }

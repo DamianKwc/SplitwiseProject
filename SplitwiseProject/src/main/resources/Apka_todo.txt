@@ -16,3 +16,5 @@
 16. Na stronie /index, tam gdzie mamy komunikat "Welcome in SplitNotThatWise" dajmy jakieś zdjęcie, tło, cokolwiek, żeby nie biło pustką po oczach. Można pomyśleć ogólnie o ładnym templacie dla całej apki.
 
 17. Ujednolicić te nazwy metod w controllerach - raz jest addEvent, raz createExpense - zróbmy wszędzie spójnie.
+
+18. wysyłać w kontrolerze parametr który sprawdza typ expense.

@@ -23,12 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Data
 @Controller
@@ -72,10 +70,10 @@ public class ExpenseController {
                                 Model model) {
         Event foundEvent = eventService.findById(eventId);
         Expense foundExpense = expenseService.findById(expenseId);
-        BigDecimal costPerParticipant = foundExpense.getCostPerParticipant();
+        Map<Integer, BigDecimal> costPerParticipant = foundExpense.getCostPerUser();
 
         foundExpense.getParticipants().forEach(participant -> {
-            participant.setBalance(userService.calculateUserBalance(participant.getId()).add(costPerParticipant));
+            participant.setBalance(userService.calculateUserBalance(participant.getId()).add(costPerParticipant.get(participant.getId())));
             participant.getExpenses().removeIf(expense -> participant.getExpenses().contains(expense));
             userService.save(participant);
         });
@@ -100,9 +98,10 @@ public class ExpenseController {
         List<User> eventMembers = foundEvent.getEventMembers();
         model.addAttribute("eventMembers", eventMembers);
 
-        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
-        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
-                "Expense '" + expense.getName() + "' already exists.")));
+        TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
+        model.addAttribute("expenseParticipants", expenseParticipants);
+
+        checkIfExpenseAlreadyExists(splitExpenseDto, eventId, result);
 
         if (splitExpenseDto.getName().isBlank()) {
             result.addError(new FieldError("newExpense", "name",
@@ -122,10 +121,10 @@ public class ExpenseController {
         }
 
         if (result.hasErrors()) {
-            return "new-expense";
+            return "new-split-expense";
         }
         Expense expense = expenseMapper.mapSplitExpenseToDomain(foundEvent, splitExpenseDto);
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
+
         List<Payoff> expensePayoffs = new ArrayList<>();
 
         Payoff defaultPayoff = Payoff.builder()
@@ -136,20 +135,23 @@ public class ExpenseController {
         expensePayoffs.add(defaultPayoff);
         expense.setPayoffs(expensePayoffs);
 
-        model.addAttribute("expenseParticipants", expenseParticipants);
-
         expenseService.save(expense);
-
         return "redirect:/events/" + eventId + "/expenses";
+    }
+
+    private void checkIfExpenseAlreadyExists(@ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
+                                             @PathVariable Integer eventId,
+                                             BindingResult result) {
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
+        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
+                "Expense '" + expense.getName() + "' already exists.")));
     }
 
     @PostMapping("/events/{eventId}/saveCustomExpense")
     public String createCustomExpense(@ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
-                                    @PathVariable Integer eventId,
-                                    @RequestParam(value = "userId") Integer userId,
-                                    @RequestParam(value = "userContribution") List<String> usersContribution,
-                                    BindingResult result,
-                                    Model model) {
+                                      @PathVariable Integer eventId,
+                                      BindingResult result,
+                                      Model model) {
         Event foundEvent = eventService.findById(eventId);
         model.addAttribute("event", foundEvent);
 
@@ -158,6 +160,9 @@ public class ExpenseController {
 
         List<User> eventMembers = foundEvent.getEventMembers();
         model.addAttribute("eventMembers", eventMembers);
+
+        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
+        model.addAttribute("expenseParticipants", expenseParticipants);
 
         Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
         existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
@@ -184,11 +189,14 @@ public class ExpenseController {
             return "new-expense";
         }
         //TODO: W walidacji sprawdzać, czy przekazana przez usera suma "contributionów" nie przekracza sumy wprowadzanego wydatku
-        Expense expense = expenseMapper.mapCustomExpenseDtoToDomain(foundEvent, customExpenseDto);
-//        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
-//        TODO: dorobić metodę w UserService, jeśli chcemy dla tego typu wydatku również pobierać participantów z frontu
-        List<Payoff> expensePayoffs = new ArrayList<>();
 
+        List<String> namesOfMembers = eventMembers.stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+        customExpenseDto.setParticipantsNames(namesOfMembers);
+        Expense expense = expenseMapper.mapCustomExpenseDtoToDomain(foundEvent, customExpenseDto);
+
+        List<Payoff> expensePayoffs = new ArrayList<>();
         Payoff defaultPayoff = Payoff.builder()
                 .expensePaid(expense)
                 .userPaying(loggedInUser)
@@ -197,10 +205,7 @@ public class ExpenseController {
         expensePayoffs.add(defaultPayoff);
         expense.setPayoffs(expensePayoffs);
 
-//        model.addAttribute("expenseParticipants", expenseParticipants);
-
         expenseService.save(expense);
-
         return "redirect:/events/" + eventId + "/expenses";
     }
 

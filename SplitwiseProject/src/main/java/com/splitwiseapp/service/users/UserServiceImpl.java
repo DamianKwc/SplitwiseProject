@@ -1,5 +1,6 @@
 package com.splitwiseapp.service.users;
 
+import com.splitwiseapp.dto.expense.CustomExpenseDto;
 import com.splitwiseapp.dto.expense.SplitExpenseDto;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -66,7 +69,10 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
         return expensesWithUserAsParticipant.stream()
-                .map(Expense::getCostPerParticipant)
+                .map(expense -> expense.getCostPerUser().entrySet().stream()
+                        .filter(e -> userId.equals(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
                 .reduce(BigDecimal.ZERO, BigDecimal::subtract);
     }
 
@@ -79,6 +85,18 @@ public class UserServiceImpl implements UserService {
                 User foundUser = this.findByUsername(username);
                 participants.add(foundUser);
             }
+        }
+        return participants;
+    }
+
+    @Override
+    public TreeSet<User> getUsersByNames(CustomExpenseDto customExpenseDto) {
+        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
+        if (customExpenseDto.getParticipantsNames() != null) {
+            Set<User> retrievedUsers = customExpenseDto.getParticipantsNames().stream()
+                    .map(this::findByUsername)
+                    .collect(Collectors.toSet());
+            participants.addAll(retrievedUsers);
         }
         return participants;
     }

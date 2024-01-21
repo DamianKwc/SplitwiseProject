@@ -145,8 +145,11 @@ public class EventController {
         for (Expense expense : eventExpenses) {
             Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
             Map<Integer, BigDecimal> balancePerParticipant = expenseService.mapUserToBalance(expense);
-            expense.setPayoffAmountPerUser(payoffAmountPerParticipant);
+            Map<Integer, BigDecimal> costPerParticipant = expenseService.mapUserToCost(expense);
+            expense.setCostPerUser(costPerParticipant);
+            expense.setPayoffPerUser(payoffAmountPerParticipant);
             expense.setBalancePerUser(balancePerParticipant);
+            expenseService.save(expense);
         }
 
         for (User u : allUsers) {

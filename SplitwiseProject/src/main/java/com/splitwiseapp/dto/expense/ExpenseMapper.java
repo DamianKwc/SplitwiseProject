@@ -9,9 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,61 +21,70 @@ public class ExpenseMapper {
 
     public Expense mapSplitExpenseToDomain(Event event, SplitExpenseDto splitExpenseDto) {
         TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
+        Map<Integer, BigDecimal> costPerParticipant = new HashMap<>();
+
         BigDecimal cost = splitExpenseDto.getCost().isBlank()
                 ? BigDecimal.ZERO
                 : new BigDecimal(splitExpenseDto.getCost().replaceAll(",", "."));
-        BigDecimal costPerParticipant = expenseService.splitCostEquallyPerParticipants(cost, expenseParticipants.size());
+        BigDecimal equalPerEachParticipant = expenseService.splitCostEquallyPerParticipants(cost, expenseParticipants.size());
 
         expenseParticipants.forEach(participant -> {
             List<String> namesOfExistingExpenses = participant.getExpenses().stream()
                     .map(Expense::getName)
                     .collect(Collectors.toList());
             if (!namesOfExistingExpenses.contains(splitExpenseDto.getName())) {
-                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(costPerParticipant));
+                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(equalPerEachParticipant));
             }
+            costPerParticipant.put(participant.getId(), equalPerEachParticipant);
             userService.save(participant);
         });
+
+        System.out.println(costPerParticipant);
 
         return Expense.builder()
                 .name(splitExpenseDto.getName())
                 .totalCost(cost)
-                .costPerParticipant(costPerParticipant)
                 .event(event)
                 .participants(expenseParticipants)
-                .payoffAmountPerUser(new HashMap<>())
+                .costPerUser(costPerParticipant)
+                .payoffPerUser(new HashMap<>())
                 .balancePerUser(new HashMap<>())
                 .build();
     }
 
     public Expense mapCustomExpenseDtoToDomain(Event event, CustomExpenseDto customExpenseDto) {
-//        BigDecimal cost = customExpenseDto.getCost().isBlank()
-//                ? BigDecimal.ZERO
-//                : new BigDecimal(customExpenseDto.getCost().replaceAll(",", "."));
-//
-//        expenseParticipants.forEach(participant -> {
-//            List<String> namesOfExistingExpenses = participant.getExpenses().stream()
-//                    .map(Expense::getName)
-//                    .collect(Collectors.toList());
-//            if (!namesOfExistingExpenses.contains(customExpenseDto.getName())) {
-//                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(costPerParticipant));
-//            }
-//            userService.save(participant);
-//        });
-//
-//        return Expense.builder()
-//                .name(customExpenseDto.getName())
-//                .totalCost(cost)
-//                .costPerParticipant(costPerParticipant)
-//                .event(event)
-//                .participants(expenseParticipants)
-//                .payoffAmountPerUser(new HashMap<>())
-//                .balancePerUser(new HashMap<>())
-//                .build();
-        return null; //TODO: Pomyśleć jak to chcemy mapować - co brać z frontu i co zapisywać do Expense?
-    }
+        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
+        BigDecimal cost = customExpenseDto.getCost().isBlank()
+                ? BigDecimal.ZERO
+                : new BigDecimal(customExpenseDto.getCost().replaceAll(",", "."));
 
-    public static SplitExpenseDto mapToDto(Expense expense) {
-        return null;
+        Map<Integer, BigDecimal> userContribution = customExpenseDto.getUserContribution();
+
+        expenseParticipants.forEach(participant -> {
+            List<String> namesOfExistingExpenses = participant.getExpenses().stream()
+                    .map(Expense::getName)
+                    .collect(Collectors.toList());
+            if (!namesOfExistingExpenses.contains(customExpenseDto.getName())) {
+                BigDecimal participantContribution = userContribution.get(participant.getId());
+                if (userContribution.containsKey(participant.getId())
+                        && !Objects.equals(participantContribution, BigDecimal.ZERO)) {
+                    participant.setBalance(participant.getBalance().subtract(participantContribution));
+                }
+            }
+            userService.save(participant);
+        });
+
+        System.out.println(userContribution);
+
+        return Expense.builder()
+                .name(customExpenseDto.getName())
+                .totalCost(cost)
+                .event(event)
+                .participants(expenseParticipants)
+                .costPerUser(userContribution)
+                .payoffPerUser(new HashMap<>())
+                .balancePerUser(new HashMap<>())
+                .build();
     }
 
 }

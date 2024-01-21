@@ -1,7 +1,11 @@
 package com.splitwiseapp.dto.expense;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -10,9 +14,15 @@ import lombok.*;
 @ToString
 public class CustomExpenseDto {
 
-    @NotEmpty
+    @NotBlank
     private String name;
 
-    @NotEmpty
+    @NotBlank
     private String cost;
+
+    @NotBlank
+    private List<String> participantsNames;
+
+    @NotBlank
+    private Map<Integer, BigDecimal> userContribution;
 }
