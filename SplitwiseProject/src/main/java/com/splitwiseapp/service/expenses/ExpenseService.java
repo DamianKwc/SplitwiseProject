@@ -11,6 +11,7 @@ import java.util.Map;
 public interface ExpenseService {
 
     void save(Expense expense);
+    List<Expense> saveAll(List<Expense> expenses);
     void deleteById(Integer expenseId);
     void deleteByEventId(Integer eventId);
     Expense findById(Integer expenseId);

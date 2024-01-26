@@ -90,7 +90,7 @@ public class EventController {
 
     @GetMapping("/delete")
     public String deleteEvent(@RequestParam("eventId") Integer eventId, Model model) {
-        Event event = eventService.findById(eventId); //TODO: Przy kasowaniu eventu, leci NoSuchElementException - obsłużyć jakoś
+        Event event = eventService.findById(eventId);
         User user = userService.getCurrentlyLoggedInUser();
 
         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
@@ -161,6 +161,9 @@ public class EventController {
         BigDecimal updatedBalance = calculateUpdatedBalanceForEvent(eventExpenses);
         event.setEventBalance(updatedBalance);
         eventService.save(event);
+
+        System.out.println(eventExpenses);
+        System.out.println(updatedBalance);
 
         model.addAttribute("user", user);
         model.addAttribute("event", event);

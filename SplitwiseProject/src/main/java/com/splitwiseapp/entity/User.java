@@ -51,10 +51,10 @@ public class User {
 
     @JsonIgnore
     @Builder.Default
-    @ManyToMany(mappedBy = "participants")
+    @ManyToMany(mappedBy = "participants", cascade = {CascadeType.ALL})
     private Set<Expense> expenses = new HashSet<>();
 
-    @OneToMany(mappedBy = "userPaying")
+    @OneToMany(mappedBy = "userPaying",  cascade = {CascadeType.ALL})
     private List<Payoff> payoffs;
 
     public void addEvent(Event event) {

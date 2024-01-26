@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 @Service
@@ -19,6 +20,6 @@ public interface UserService {
     List<User> findAll();
     User getCurrentlyLoggedInUser();
     BigDecimal calculateUserBalance(Integer userId);
-    TreeSet<User> getUsersByNames(SplitExpenseDto splitExpenseDto);
-    TreeSet<User> getUsersByNames(CustomExpenseDto customExpenseDto);
+    List<User> getUsersByNames(SplitExpenseDto splitExpenseDto);
+    List<User> getUsersByNames(CustomExpenseDto customExpenseDto);
 }

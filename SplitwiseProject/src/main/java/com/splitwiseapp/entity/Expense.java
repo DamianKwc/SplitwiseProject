@@ -33,20 +33,36 @@ public class Expense {
     @Column(name = "expenseBalance")
     private BigDecimal expenseBalance;
 
-    @Transient
     @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "debt_per_user_mapping",
+            joinColumns = @JoinColumn(name = "expense_id"))
+    @MapKeyColumn(name = "user_id")
+    @Column(name = "debt_per_user")
     private Map<Integer, BigDecimal> debtPerUser = new HashMap<>();
 
-    @Transient
     @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "cost_per_user_mapping",
+            joinColumns = @JoinColumn(name = "expense_id"))
+    @MapKeyColumn(name = "user_id")
+    @Column(name = "cost_per_user")
     private Map<Integer, BigDecimal> costPerUser = new HashMap<>();
 
-    @Transient
     @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "payoff_per_user_mapping",
+            joinColumns = @JoinColumn(name = "expense_id"))
+    @MapKeyColumn(name = "user_id")
+    @Column(name = "payoff_per_user")
     private Map<Integer, BigDecimal> payoffPerUser = new HashMap<>();
 
-    @Transient
     @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "balance_per_user_mapping",
+            joinColumns = @JoinColumn(name = "expense_id"))
+    @MapKeyColumn(name = "user_id")
+    @Column(name = "balance_per_user")
     private Map<Integer, BigDecimal> balancePerUser = new HashMap<>();
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
@@ -61,7 +77,7 @@ public class Expense {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private Set<User> participants = new HashSet<>();
+    private List<User> participants = new LinkedList<>();
 
     @OneToMany(mappedBy = "expensePaid", cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;

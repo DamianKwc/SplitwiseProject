@@ -14,6 +14,7 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
+import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -98,7 +99,7 @@ public class ExpenseController {
         List<User> eventMembers = foundEvent.getEventMembers();
         model.addAttribute("eventMembers", eventMembers);
 
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
+        List<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
         model.addAttribute("expenseParticipants", expenseParticipants);
 
         checkIfExpenseAlreadyExists(splitExpenseDto, eventId, result);
@@ -139,14 +140,6 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    private void checkIfExpenseAlreadyExists(@ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
-                                             @PathVariable Integer eventId,
-                                             BindingResult result) {
-        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
-        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
-                "Expense '" + expense.getName() + "' already exists.")));
-    }
-
     @PostMapping("/events/{eventId}/saveCustomExpense")
     public String createCustomExpense(@ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
                                       @PathVariable Integer eventId,
@@ -161,12 +154,10 @@ public class ExpenseController {
         List<User> eventMembers = foundEvent.getEventMembers();
         model.addAttribute("eventMembers", eventMembers);
 
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
+        List<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
         model.addAttribute("expenseParticipants", expenseParticipants);
 
-        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
-        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
-                "Expense '" + expense.getName() + "' already exists.")));
+        checkIfExpenseAlreadyExists(customExpenseDto, eventId, result);
 
         if (customExpenseDto.getName().isBlank()) {
             result.addError(new FieldError("newExpense", "name",
@@ -176,19 +167,29 @@ public class ExpenseController {
         Pattern pattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
         Matcher matcher = pattern.matcher(customExpenseDto.getCost());
 
-        if (!matcher.matches()) {
-            result.addError(new FieldError("newExpense", "cost",
-                    "Enter proper value for expense amount."));
-        }
         if (customExpenseDto.getCost().isEmpty()) {
             result.addError(new FieldError("newExpense", "cost",
                     "Expense amount field cannot be empty."));
         }
 
-        if (result.hasErrors()) {
-            return "new-expense";
+        if (!matcher.matches()) {
+            result.addError(new FieldError("newExpense", "cost",
+                    "Enter proper value for expense amount."));
         }
-        //TODO: W walidacji sprawdzać, czy przekazana przez usera suma "contributionów" nie przekracza sumy wprowadzanego wydatku
+
+        if (!matcher.matches()) {
+            result.addError(new FieldError("newExpense", "userContribution",
+                    "Enter proper value for user contribution"));
+        }
+
+        if (customExpenseDto.getUserContribution().values().isEmpty()) {
+            result.addError(new FieldError("newExpense", "userContribution",
+                    "User contribution amount amount field cannot be empty."));
+        }
+
+        if (result.hasErrors()) {
+            return "new-custom-expense";
+        }
 
         List<String> namesOfMembers = eventMembers.stream()
                 .map(User::getUsername)
@@ -267,6 +268,22 @@ public class ExpenseController {
         user.removeExpense(expense);
         userService.save(user);
         return "redirect:/expenses/" + expenseId + "/users";
+    }
+
+    private void checkIfExpenseAlreadyExists(@ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
+                                             @PathVariable Integer eventId,
+                                             BindingResult result) {
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
+        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
+                "Expense '" + expense.getName() + "' already exists.")));
+    }
+
+    private void checkIfExpenseAlreadyExists(@ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
+                                             @PathVariable Integer eventId,
+                                             BindingResult result) {
+        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
+        existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
+                "Expense '" + expense.getName() + "' already exists.")));
     }
 
 }

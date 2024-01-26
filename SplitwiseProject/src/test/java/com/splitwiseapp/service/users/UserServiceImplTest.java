@@ -53,11 +53,11 @@ class UserServiceImplTest {
                 .userEvents(List.of(Event.builder().build()))
                 .build());
         Expense testExpense1 = Expense.builder()
-                .participants(Set.of(testUser.get()))
+                .participants(List.of(testUser.get()))
                 .costPerUser(Map.of(1, BigDecimal.valueOf(10)))
                 .build();
         Expense testExpense2 = Expense.builder()
-                .participants(Set.of(testUser.get()))
+                .participants(List.of(testUser.get()))
                 .costPerUser(Map.of(1, BigDecimal.valueOf(20)))
                 .build();
         Event event = Event.builder()

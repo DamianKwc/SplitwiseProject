@@ -48,7 +48,7 @@ public class TestData {
     public static Expense testExpense = Expense.builder()
             .costPerUser(prepareCostPerUser())
             .payoffs(List.of(payoff_1, payoff_2, payoff_3))
-            .participants(Set.of(user_1, user_2, user_3))
+            .participants(List.of(user_1, user_2, user_3))
             .build();
 
     private static Map<Integer, BigDecimal> prepareCostPerUser() {

@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public TreeSet<User> getUsersByNames(SplitExpenseDto splitExpenseDto) {
+    public List<User> getUsersByNames(SplitExpenseDto splitExpenseDto) {
         TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (splitExpenseDto.getParticipantUsername() != null) {
             String[] splitUsernames = splitExpenseDto.getParticipantUsername().split("[,]", 0);
@@ -86,11 +86,11 @@ public class UserServiceImpl implements UserService {
                 participants.add(foundUser);
             }
         }
-        return participants;
+        return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
     }
 
     @Override
-    public TreeSet<User> getUsersByNames(CustomExpenseDto customExpenseDto) {
+    public List<User> getUsersByNames(CustomExpenseDto customExpenseDto) {
         TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (customExpenseDto.getParticipantsNames() != null) {
             Set<User> retrievedUsers = customExpenseDto.getParticipantsNames().stream()
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toSet());
             participants.addAll(retrievedUsers);
         }
-        return participants;
+        return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
     }
 
     public List<User> findAllUsers() {

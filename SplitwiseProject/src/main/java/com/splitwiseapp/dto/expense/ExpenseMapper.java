@@ -20,7 +20,7 @@ public class ExpenseMapper {
     private final ExpenseService expenseService;
 
     public Expense mapSplitExpenseToDomain(Event event, SplitExpenseDto splitExpenseDto) {
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
+        List<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
         Map<Integer, BigDecimal> costPerParticipant = new HashMap<>();
 
         BigDecimal cost = splitExpenseDto.getCost().isBlank()
@@ -53,7 +53,7 @@ public class ExpenseMapper {
     }
 
     public Expense mapCustomExpenseDtoToDomain(Event event, CustomExpenseDto customExpenseDto) {
-        TreeSet<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
+        List<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
         BigDecimal cost = customExpenseDto.getCost().isBlank()
                 ? BigDecimal.ZERO
                 : new BigDecimal(customExpenseDto.getCost().replaceAll(",", "."));

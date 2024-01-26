@@ -48,6 +48,12 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    public List<Expense> saveAll(List<Expense> expenses) {
+        return expenseRepository.saveAll(expenses);
+    }
+
+
+    @Override
     public BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber) {
         return participantsNumber == 0
                 ? BigDecimal.ZERO
