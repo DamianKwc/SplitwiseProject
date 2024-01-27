@@ -51,7 +51,7 @@ public class ExpenseMapper {
                 .balancePerUser(new HashMap<>())
                 .build();
     }
-
+//TODO zamiana ',' na '.' dla userContribution
     public Expense mapCustomExpenseDtoToDomain(Event event, CustomExpenseDto customExpenseDto) {
         List<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
         BigDecimal cost = customExpenseDto.getCost().isBlank()
@@ -68,13 +68,13 @@ public class ExpenseMapper {
                 BigDecimal participantContribution = userContribution.get(participant.getId());
                 if (userContribution.containsKey(participant.getId())
                         && !Objects.equals(participantContribution, BigDecimal.ZERO)) {
-                    participant.setBalance(participant.getBalance().subtract(participantContribution));
+                    participant.setBalance(participant.getBalance().subtract(participantContribution == null ?
+                            BigDecimal.ZERO
+                            :participantContribution));
                 }
             }
             userService.save(participant);
         });
-
-        System.out.println(userContribution);
 
         return Expense.builder()
                 .name(customExpenseDto.getName())

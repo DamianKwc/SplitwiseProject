@@ -177,20 +177,10 @@ public class ExpenseController {
                     "Enter proper value for expense amount."));
         }
 
-        if (!matcher.matches()) {
-            result.addError(new FieldError("newExpense", "userContribution",
-                    "Enter proper value for user contribution"));
-        }
-
-        if (customExpenseDto.getUserContribution().values().isEmpty()) {
-            result.addError(new FieldError("newExpense", "userContribution",
-                    "User contribution amount amount field cannot be empty."));
-        }
-
         if (result.hasErrors()) {
             return "new-custom-expense";
         }
-
+//TODO validate żeby user nie mógł wpisać znaków w userContribute
         List<String> namesOfMembers = eventMembers.stream()
                 .map(User::getUsername)
                 .collect(Collectors.toList());

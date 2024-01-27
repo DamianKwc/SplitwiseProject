@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 @Getter
@@ -32,6 +33,10 @@ public class Expense {
     @JsonIgnore
     @Column(name = "expenseBalance")
     private BigDecimal expenseBalance;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "creation_date")
+    private LocalDate creationDate;
 
     @Builder.Default
     @ElementCollection
