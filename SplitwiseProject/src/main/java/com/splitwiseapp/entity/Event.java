@@ -20,6 +20,7 @@ public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     @Column(name = "event_id")
     private Integer id;
 
@@ -30,26 +31,22 @@ public class Event {
     @Column(name = "creation_date")
     private LocalDate creationDate;
 
-    @JsonIgnore
     @Column(name = "eventBalance")
     private BigDecimal eventBalance;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "event_members",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @Builder.Default
     private List<User> eventMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "event", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH,CascadeType.REMOVE})
     private List<Expense> expenses;
 

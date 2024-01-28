@@ -19,18 +19,16 @@ public class Expense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     @Column(name = "expense_id")
     private Integer id;
 
-    @JsonIgnore
     @Column(name = "expense_name", nullable = false)
     private String name;
 
-    @JsonIgnore
     @Column(name = "expense_cost", nullable = false)
     private BigDecimal totalCost;
 
-    @JsonIgnore
     @Column(name = "expenseBalance")
     private BigDecimal expenseBalance;
 
@@ -38,7 +36,6 @@ public class Expense {
     @Column(name = "creation_date")
     private LocalDate creationDate;
 
-    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "debt_per_user_mapping",
             joinColumns = @JoinColumn(name = "expense_id"))
@@ -46,7 +43,6 @@ public class Expense {
     @Column(name = "debt_per_user")
     private Map<Integer, BigDecimal> debtPerUser = new HashMap<>();
 
-    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "cost_per_user_mapping",
             joinColumns = @JoinColumn(name = "expense_id"))
@@ -54,7 +50,6 @@ public class Expense {
     @Column(name = "cost_per_user")
     private Map<Integer, BigDecimal> costPerUser = new HashMap<>();
 
-    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "payoff_per_user_mapping",
             joinColumns = @JoinColumn(name = "expense_id"))
@@ -62,7 +57,6 @@ public class Expense {
     @Column(name = "payoff_per_user")
     private Map<Integer, BigDecimal> payoffPerUser = new HashMap<>();
 
-    @Builder.Default
     @ElementCollection
     @CollectionTable(name = "balance_per_user_mapping",
             joinColumns = @JoinColumn(name = "expense_id"))
@@ -70,21 +64,19 @@ public class Expense {
     @Column(name = "balance_per_user")
     private Map<Integer, BigDecimal> balancePerUser = new HashMap<>();
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "expense_participants",
             joinColumns = @JoinColumn(name = "expense_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @Builder.Default
     private List<User> participants = new LinkedList<>();
 
-    @OneToMany(mappedBy = "expensePaid", cascade = {CascadeType.REMOVE})
+    @OneToMany(mappedBy = "expensePaid", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;
 
     public void addEvent(Event event) {

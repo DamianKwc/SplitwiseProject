@@ -11,6 +11,7 @@ import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import com.splitwiseapp.entity.UsernameComparator;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;

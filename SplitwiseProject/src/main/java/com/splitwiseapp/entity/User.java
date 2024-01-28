@@ -21,6 +21,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     @Column(name = "user_id")
     private Integer id;
 
@@ -33,28 +34,24 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @JsonIgnore
     @Column(name = "balance")
     private BigDecimal balance;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles = new ArrayList<>();
 
-    @JsonIgnore
-    @ManyToMany(mappedBy = "eventMembers", cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH})
-    @Builder.Default
+    @ManyToMany(mappedBy = "eventMembers",
+            fetch = FetchType.LAZY)
     private List<Event> userEvents = new ArrayList<>();
 
-    @JsonIgnore
-    @Builder.Default
-    @ManyToMany(mappedBy = "participants", cascade = {CascadeType.ALL})
+    @ManyToMany(mappedBy = "participants", fetch = FetchType.LAZY)
     private Set<Expense> expenses = new HashSet<>();
 
-    @OneToMany(mappedBy = "userPaying",  cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "userPaying", fetch = FetchType.LAZY)
     private List<Payoff> payoffs;
 
     public void addEvent(Event event) {

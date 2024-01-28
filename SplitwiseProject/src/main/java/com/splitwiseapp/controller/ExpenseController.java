@@ -180,7 +180,7 @@ public class ExpenseController {
         if (result.hasErrors()) {
             return "new-custom-expense";
         }
-//TODO validate żeby user nie mógł wpisać znaków w userContribute
+
         List<String> namesOfMembers = eventMembers.stream()
                 .map(User::getUsername)
                 .collect(Collectors.toList());

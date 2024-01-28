@@ -67,7 +67,8 @@
                                 <li class="list-group-item list-group-item-dark" th:text="${user.username}"></li>
                                 <input type="text" id="userContribution" name="userContribution"
                                        th:field="*{userContribution[__${user.id}__]}"
-                                       class="form-control"/>
+                                       class="form-control" pattern="[0-9]*[\.]?[0-9]+" title="Enter a valid number with a dot '.') as separator."/>
+                                <p th:errors="*{userContribution}" class="text-danger"></p>
                             </ul>
                         </div>
                         <br>

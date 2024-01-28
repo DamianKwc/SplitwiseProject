@@ -51,7 +51,7 @@ public class ExpenseMapper {
                 .balancePerUser(new HashMap<>())
                 .build();
     }
-//TODO zamiana ',' na '.' dla userContribution
+
     public Expense mapCustomExpenseDtoToDomain(Event event, CustomExpenseDto customExpenseDto) {
         List<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
         BigDecimal cost = customExpenseDto.getCost().isBlank()
