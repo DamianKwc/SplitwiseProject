@@ -16,6 +16,7 @@ public class EventMapper {
     public Event mapToDomain(EventDto eventDto) {
         return Event.builder()
                 .eventName(getEventName(eventDto))
+                .creationDate(LocalDate.now())
                 .owner(userService.getCurrentlyLoggedInUser())
                 .creationDate(LocalDate.now())
                 .build();

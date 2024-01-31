@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,7 @@ public class ExpenseMapper {
                     .map(Expense::getName)
                     .collect(Collectors.toList());
             if (!namesOfExistingExpenses.contains(splitExpenseDto.getName())) {
-                participant.setBalance(userService.calculateUserBalance(participant.getId()).subtract(equalPerEachParticipant));
+                participant.setBalance(participant.getBalance().subtract(equalPerEachParticipant));
             }
             costPerParticipant.put(participant.getId(), equalPerEachParticipant);
             userService.save(participant);
@@ -43,7 +44,9 @@ public class ExpenseMapper {
 
         return Expense.builder()
                 .name(splitExpenseDto.getName())
+                .creationDate(LocalDate.now())
                 .totalCost(cost)
+                .expenseBalance(cost.negate())
                 .event(event)
                 .participants(expenseParticipants)
                 .costPerUser(costPerParticipant)
@@ -61,16 +64,18 @@ public class ExpenseMapper {
         Map<Integer, BigDecimal> userContribution = customExpenseDto.getUserContribution();
 
         expenseParticipants.forEach(participant -> {
+
             List<String> namesOfExistingExpenses = participant.getExpenses().stream()
                     .map(Expense::getName)
                     .collect(Collectors.toList());
+
             if (!namesOfExistingExpenses.contains(customExpenseDto.getName())) {
                 BigDecimal participantContribution = userContribution.get(participant.getId());
                 if (userContribution.containsKey(participant.getId())
                         && !Objects.equals(participantContribution, BigDecimal.ZERO)) {
-                    participant.setBalance(participant.getBalance().subtract(participantContribution == null ?
-                            BigDecimal.ZERO
-                            :participantContribution));
+                    participant.setBalance(participant.getBalance().subtract(participantContribution == null
+                            ? BigDecimal.ZERO
+                            : participantContribution));
                 }
             }
             userService.save(participant);
@@ -78,7 +83,9 @@ public class ExpenseMapper {
 
         return Expense.builder()
                 .name(customExpenseDto.getName())
+                .creationDate(LocalDate.now())
                 .totalCost(cost)
+                .expenseBalance(cost.negate())
                 .event(event)
                 .participants(expenseParticipants)
                 .costPerUser(userContribution)
