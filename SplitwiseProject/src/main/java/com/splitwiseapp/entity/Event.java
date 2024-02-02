@@ -24,7 +24,7 @@ public class Event {
     @Column(name = "event_id")
     private Integer id;
 
-    @Column(name = "event_name", unique = true)
+    @Column(name = "event_name")
     private String eventName;
 
     @Temporal(TemporalType.DATE)

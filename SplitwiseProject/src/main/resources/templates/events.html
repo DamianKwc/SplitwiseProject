@@ -101,6 +101,11 @@
                         </span>
                     </a>
                 </th:block>
+                <th:block th:if="${event.owner.username eq loggedInUserName}">
+                    <a th:href="@{/events/{eventId}/edit(eventId=${event.id})}" class="btn btn-info btn-sm">
+                        Update
+                    </a>
+                </th:block>
             </td>
 
             <td th:text="${event.creationDate}"></td>

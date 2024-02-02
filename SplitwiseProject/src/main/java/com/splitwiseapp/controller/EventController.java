@@ -8,6 +8,9 @@ import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +31,56 @@ public class EventController {
     private final UserService userService;
     private final ExpenseService expenseService;
     private final EventMapper eventMapper;
+
+
+    @GetMapping("/events/{eventId}/edit")
+    public String showEventEditForm(@PathVariable("eventId") Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
+        model.addAttribute("event", event);
+        List<User> allUsers = userService.findAllUsers();
+        model.addAttribute("allUsers", allUsers);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        return "edit-event";
+    }
+
+    @PostMapping("/events/{eventId}/edit")
+    public String updateEvent(@PathVariable("eventId") Integer eventId,
+                              @RequestParam("eventName") String eventName,
+                              Model model) {
+
+        Event event = eventService.findById(eventId);
+
+        String errorMessage = null;
+
+//        if (doesEventAlreadyExist(event)) {
+//            errorMessage = "Event " + eventName + " already exists";
+//        }
+//        if (errorMessage != null) {
+//            return "edit-event";
+//        }
+
+
+//        if (doesEventAlreadyExist(event)) {
+//            result.addError(new FieldError("event", "eventName",
+//                    "Event '" + event.getEventName() + "' already exists."));
+//        }
+//
+//        if (eventName.isBlank()) {
+//            result.addError(new FieldError("event", "eventName",
+//                    "Event name field cannot be empty."));
+//        }
+//
+//        if (result.hasErrors()) {
+//            return "edit-event";
+//        }
+
+        event.setEventName(eventName);
+        eventService.save(event);
+
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        return "redirect:/events";
+    }
+
 
     @GetMapping("/events")
     public String events(@RequestParam(name = "eventName", required = false) String eventName,
@@ -133,8 +186,8 @@ public class EventController {
 
     @GetMapping("/events/{eventId}/expenses")
     public String showEventExpenses(@PathVariable("eventId") Integer eventId,
+                                    @RequestParam(value = "errorMessage", required = false) String errorMessage,
                                     Model model) {
-
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
@@ -164,6 +217,10 @@ public class EventController {
 
         System.out.println(eventExpenses);
         System.out.println(updatedBalance);
+
+        if (errorMessage != null) {
+            model.addAttribute("errorMessage", errorMessage);
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("event", event);

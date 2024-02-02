@@ -10,6 +10,8 @@ import lombok.*;
 @ToString
 public class EventDto {
 
+    private Integer id;
+
     @NotBlank
     private String eventName;
 

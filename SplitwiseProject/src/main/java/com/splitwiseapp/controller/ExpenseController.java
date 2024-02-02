@@ -14,6 +14,8 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -127,31 +129,41 @@ public class ExpenseController {
         Expense foundExpense = expenseService.findById(expenseId);
         User foundUser = userService.findById(userId);
 
+        String errorMessage = null;
+
         BigDecimal paidOffFromInput = paidOffAmount == null
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.CEILING)
                 : new BigDecimal(paidOffAmount.replaceAll(",", ".")).setScale(2, RoundingMode.CEILING);
         BigDecimal userBalance = foundUser.getBalance().add(paidOffFromInput);
 
-        Payoff payoff = Payoff.builder()
-                .expensePaid(foundExpense)
-                .userPaying(foundUser)
-                .payoffAmount(paidOffFromInput)
-                .build();
+            Payoff payoff = Payoff.builder()
+                    .expensePaid(foundExpense)
+                    .userPaying(foundUser)
+                    .payoffAmount(paidOffFromInput)
+                    .build();
 
         if (foundExpense.getTotalCost() != null) {
-            foundExpense.setExpenseBalance(foundExpense.getExpenseBalance().add(paidOffFromInput));
+                foundExpense.setExpenseBalance(foundExpense.getExpenseBalance().add(paidOffFromInput));
+            }
+            foundExpense.getPayoffs().add(payoff);
+            foundUser.getPayoffs().add(payoff);
+            foundUser.setBalance(userBalance);
+
+        if (userBalance.compareTo(BigDecimal.ZERO) > 0) {
+            errorMessage = "Too big amount of paid off";
         }
-        foundExpense.getPayoffs().add(payoff);
-        foundUser.getPayoffs().add(payoff);
-        foundUser.setBalance(userBalance);
+        if (errorMessage != null) {
+            return "redirect:/events/" + eventId + "/expenses?errorMessage=" + errorMessage;
+        }
 
-        userService.save(foundUser);
-        expenseService.save(foundExpense);
-        payoffService.save(payoff);
+            userService.save(foundUser);
+            expenseService.save(foundExpense);
+            payoffService.save(payoff);
 
-        model.addAttribute("paidOffAmount", paidOffAmount);
-        model.addAttribute("userBalance", userBalance);
+            model.addAttribute("paidOffAmount", paidOffAmount);
+            model.addAttribute("userBalance", userBalance);
 
+        System.out.println(paidOffAmount);
         return "redirect:/events/" + eventId + "/expenses";
     }
 
