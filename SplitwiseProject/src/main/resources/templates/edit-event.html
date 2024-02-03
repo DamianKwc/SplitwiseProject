@@ -53,7 +53,7 @@
                     <div class="form-group mb-3">
                         <label class="form-label">Event Name</label>
 
-                        <input type="hidden" th:field="*{id}">
+                        <input type="hidden" th:if="${event}" th:field="*{id}">
 
                         <input
                                 class="form-control"
@@ -63,8 +63,10 @@
                                 th:field="*{eventName}"
                                 type="text"
                         />
-                        <p th:errors = "*{eventName}" class="text-danger"
-                           th:if="${#fields.hasErrors('eventName')}"></p>
+                        <p th:if="${#fields.hasErrors('eventName')}" class="text-danger" th:errors="*{eventName}"></p>
+                        <div th:if="${errorMessage}" class="text-danger" role="alert">
+                            <p th:text="${errorMessage}"></p>
+                        </div>
                     </div>
 
                     <div class="form-group mb-3">
