@@ -63,9 +63,9 @@
             <th>Creation date</th>
         </tr>
         </thead>
-
         <tbody>
         <tr th:each="event : ${events}">
+            <th:block th:if="${event.owner.username eq loggedInUserName or event.eventMembers.contains(loggedInUser)}">
             <td th:text="${event.id}"></td>
             <td>
                 <th:block th:if="${event.eventBalance != null and event.eventBalance.compareTo(0) < 0}">

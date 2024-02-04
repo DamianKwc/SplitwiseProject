@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
->
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:C="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Welcome in SplitNotThatWise</title>
@@ -9,29 +7,62 @@
           rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="../css/main-page.css">
+    <style>
+        .jumbotron-heading {
+            font-size: 5em;
+        }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/register}">Register</a>
-                </li>
-                <li>
-                    <a class="nav-link active" aria-current="page" th:href="@{/login}">Login</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 <br /><br />
 <div class="container">
     <div class="row">
-        <h1 class="text-center"> Welcome in SplitNotThatWise </h1>
+        <h1 class="text-center jumbotron-heading"> Welcome in PennyPincher </h1>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100">
+                <img src="welcome-background.jpg" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">What is our task?</h5>
+                    <p class="card-text">The task of the PennyPincher application is to facilitate convenient expense settlement between you and your friends.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">No more misunderstandings</h5>
+                    <p class="card-text">Are you tired of constantly remembering who owes you how much? Forget about it! Join PennyPincher,
+                        invite friends to the events you create, and be able to control expenses in real-time.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-end mt-4">
+        <div class="col-auto text-end">
+            <p class="text-muted">Don't have an account?</p>
+        </div>
+        <div class="col-auto">
+            <a href="/register" class="btn btn-primary">Sign up</a>
+        </div>
+        <div class="col-auto text-end">
+            <p class="text-muted">Already have an account?</p>
+        </div>
+        <div class="col-auto">
+            <a href="/login" class="btn btn-primary">Login</a>
+        </div>
     </div>
 </div>
 </body>

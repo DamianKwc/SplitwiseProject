@@ -76,6 +76,9 @@ public class EventController {
     public String events(@RequestParam(name = "eventName", required = false) String eventName,
                          Model model) {
         List<Event> events;
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
+        List<Event> userEvents = loggedInUser.getUserEvents();
+
 
         if (eventName != null && !eventName.isEmpty()) {
             events = eventService.findEventsByName(eventName);
@@ -83,6 +86,7 @@ public class EventController {
             events = eventService.findAllEvents();
         }
 
+        model.addAttribute("userEvents", userEvents);
         model.addAttribute("events", events);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "events";
