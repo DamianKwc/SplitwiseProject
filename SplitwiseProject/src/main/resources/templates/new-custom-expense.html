@@ -79,10 +79,10 @@
                                     </label>
                                 </li>
                                 <li class="list-group-item flex-fill">
-                                    <input type="text" id="userContribution" name="userContribution"
+                                    <input type="text" id="userContribution_${user.id}" name="userContribution"
                                            th:field="*{userContribution[__${user.id}__]}"
                                            class="form-control user-contribution" pattern="[0-9]*[\.]?[0-9]+"
-                                           title="Enter a valid number with a dot '.') as separator." />
+                                           title="Enter a valid number with a dot '.') as separator." readonly />
                                     <p th:errors="*{userContribution}" class="text-danger"></p>
                                 </li>
                             </ul>
@@ -92,12 +92,20 @@
                                 const checkboxes = document.querySelectorAll('.user-checkbox');
                                 checkboxes.forEach(function(checkbox) {
                                     checkbox.addEventListener('change', function() {
-                                        if (this.checked) {
-                                            checkboxes.forEach(function(otherCheckbox) {
-                                                if (otherCheckbox !== checkbox) {
-                                                    otherCheckbox.checked = false;
+                                        checkboxes.forEach(function(otherCheckbox) {
+                                            if (otherCheckbox !== checkbox) {
+                                                otherCheckbox.checked = false;
+                                                const otherUserId = otherCheckbox.dataset.userId;
+                                                const otherContributionInput = document.getElementById('userContribution_' + otherUserId);
+                                                if (otherContributionInput) {
+                                                    otherContributionInput.readOnly = true;
                                                 }
-                                            });
+                                            }
+                                        });
+                                        const userId = this.dataset.userId;
+                                        const contributionInput = document.getElementById('userContribution_' + userId);
+                                        if (contributionInput) {
+                                            contributionInput.readOnly = !this.checked;
                                         }
                                     });
                                 });
