@@ -133,8 +133,8 @@ public class EventController {
 
     @GetMapping("/events/{eventId}/expenses")
     public String showEventExpenses(@PathVariable("eventId") Integer eventId,
+                                    @RequestParam(value = "errorMessage", required = false) String errorMessage,
                                     Model model) {
-
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
@@ -162,8 +162,9 @@ public class EventController {
         event.setEventBalance(updatedBalance);
         eventService.save(event);
 
-        System.out.println(eventExpenses);
-        System.out.println(updatedBalance);
+        if (errorMessage != null) {
+            model.addAttribute("errorMessage", errorMessage);
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("event", event);
@@ -174,7 +175,6 @@ public class EventController {
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
-
         return "expenses";
     }
 
@@ -236,7 +236,7 @@ public class EventController {
 
     private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
         return eventExpenses.stream()
-                .flatMap(expense -> expense.getBalancePerUser().values().stream())
+                .map(Expense::getExpenseBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

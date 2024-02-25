@@ -102,24 +102,32 @@ public class ExpenseServiceImpl implements ExpenseService {
         return expenseRepository.findByNameAndEventId(expenseName, eventId);
     }
 
-    private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
-        BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
-        Map<Integer, BigDecimal> costPerUser = expense.getCostPerUser();
-        BigDecimal participantPayoff = costPerUser.get(participant.getId());
-
-        if (costPerUser.containsKey(participant.getId()) && !Objects.equals(participantPayoff, BigDecimal.ZERO)) {
-            return payoffsSum.subtract(participantPayoff);
-        }
-
-        return payoffsSum;
-    }
-
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {
         return expense.getPayoffs().stream()
                 .filter(Objects::nonNull)
                 .filter(payoff -> participant.getId().equals(payoff.getUserPaying().getId()))
                 .map(Payoff::getPayoffAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
+        BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
+        BigDecimal totalCost = expense.getTotalCost();
+        BigDecimal participantPayoff = payoffsSum;
+
+        if (expense.getParticipants().contains(participant)) {
+            participantPayoff = payoffsSum.subtract(expense.getPayoffPerUser().getOrDefault(participant.getId(), BigDecimal.ZERO));
+        }
+
+        BigDecimal balance;
+        if (expense.getCostPerUser().containsKey(participant.getId())) {
+            BigDecimal participantCost = expense.getCostPerUser().get(participant.getId());
+            balance = participantPayoff.subtract(participantCost);
+        } else {
+            balance = participantPayoff.subtract(splitCostEquallyPerParticipants(totalCost, expense.getParticipants().size()));
+        }
+
+        return balance;
     }
 
     private BigDecimal sumParticipantCosts(Expense expense, User participant) {
