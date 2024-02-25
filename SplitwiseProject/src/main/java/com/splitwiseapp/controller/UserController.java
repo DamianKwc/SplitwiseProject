@@ -3,6 +3,7 @@ package com.splitwiseapp.controller;
 import com.splitwiseapp.dto.user.UserDto;
 import com.splitwiseapp.dto.user.UserMapper;
 import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.EventMembers;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.service.users.UserService;
 import jakarta.validation.Valid;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -51,6 +55,9 @@ public class UserController {
     public String userProfile(Model model) {
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<Event> userEvents = loggedInUser.getUserEvents();
+
+        userEvents.sort(Comparator.comparing(Event::getEventBalance));
+
         model.addAttribute("userEvents", userEvents);
         model.addAttribute("userBalance", loggedInUser.getBalance());
         model.addAttribute("loggedInUserName", loggedInUser.getUsername());

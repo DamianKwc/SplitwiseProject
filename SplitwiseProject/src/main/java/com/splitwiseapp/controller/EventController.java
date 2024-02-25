@@ -29,11 +29,56 @@ public class EventController {
     private final ExpenseService expenseService;
     private final EventMapper eventMapper;
 
+    @GetMapping("/events/{eventId}/edit")
+    public String showEventEditForm(@PathVariable("eventId") Integer eventId, Model model) {
+        Event event = eventService.findById(eventId);
+        model.addAttribute("event", event);
+        List<User> allUsers = userService.findAllUsers();
+        model.addAttribute("allUsers", allUsers);
+        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        return "edit-event";
+    }
+
+    @PostMapping("/events/{eventId}/edit")
+    public String updateEvent(@PathVariable("eventId") Integer eventId,
+                              @RequestParam("eventName") String eventName,
+                              Model model) {
+        User user = userService.getCurrentlyLoggedInUser();
+        model.addAttribute("loggedInUserName", user.getUsername());
+
+        Event event = eventService.findById(eventId);
+        Event existingEvent = eventService.findByEventNameAndOwner(eventName, user);
+
+        String errorMessage = null;
+
+        if (eventName.isBlank()) {
+            errorMessage = "Event name field cannot be blank.";
+        } else if (existingEvent != null && !existingEvent.getId().equals(eventId)) {
+            errorMessage = "You already have an event with the name '" + eventName + "'. Please choose a different name.";
+        }
+
+        if (errorMessage != null) {
+            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("event", event);
+            List<User> allUsers = userService.findAllUsers();
+            model.addAttribute("allUsers", allUsers);
+            return "edit-event";
+        }
+
+        eventName=capitalizeFirstLetter(eventName);
+        event.setEventName(eventName);
+        eventService.save(event);
+
+        return "redirect:/events";
+    }
+
     @GetMapping("/events")
     public String events(@RequestParam(name = "eventName", required = false) String eventName,
                          Model model) {
-
         List<Event> events;
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
+        List<Event> userEvents = loggedInUser.getUserEvents();
+
 
         if (eventName != null && !eventName.isEmpty()) {
             events = eventService.findEventsByName(eventName);
@@ -41,6 +86,7 @@ public class EventController {
             events = eventService.findAllEvents();
         }
 
+        model.addAttribute("userEvents", userEvents);
         model.addAttribute("events", events);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "events";
@@ -67,16 +113,19 @@ public class EventController {
     public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
                               Model model,
                               BindingResult result) {
-        Event existingEvent = eventService.findByEventName(eventDto.getEventName());
+        User user = userService.getCurrentlyLoggedInUser();
+        model.addAttribute("loggedInUserName", user.getUsername());
 
-        if (doesEventAlreadyExist(existingEvent)) {
+        Event existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
+
+        if (existingEvent != null) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event '" + existingEvent.getEventName() + "' already exists."));
+                    "You already have an event with the name '" + existingEvent.getEventName() + "'. Please choose a different name."));
         }
 
         if (eventDto.getEventName().isBlank()) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event name field cannot be empty."));
+                    "Event name field cannot be blank."));
         }
 
         if (result.hasErrors()) {
@@ -84,7 +133,6 @@ public class EventController {
         }
 
         eventService.save(eventMapper.mapToDomain(eventDto));
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
         return "redirect:/events";
     }
 
@@ -166,6 +214,10 @@ public class EventController {
             model.addAttribute("errorMessage", errorMessage);
         }
 
+        if (errorMessage != null) {
+            model.addAttribute("errorMessage", errorMessage);
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
@@ -242,6 +294,13 @@ public class EventController {
 
     private boolean doesEventAlreadyExist(Event existingEvent) {
         return existingEvent != null && !existingEvent.getEventName().isBlank();
+    }
+
+    private String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }

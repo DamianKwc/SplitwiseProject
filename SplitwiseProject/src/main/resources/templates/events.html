@@ -37,7 +37,8 @@
 </nav>
 <div class="container">
     <div class="row col-md-10 d-flex align-items-center">
-        <h2 class="me-3">Events List</h2>
+        <br><br>
+        <h1 class="text-center">Events List</h1>
         <div class="input-group">
             <form th:action="@{/events}" method="get" class="input-group" th:autocomplete="off">
                 <div id="search-autocomplete" class="form-outline" data-mdb-input-init>
@@ -63,9 +64,9 @@
             <th>Creation date</th>
         </tr>
         </thead>
-
         <tbody>
         <tr th:each="event : ${events}">
+            <th:block th:if="${event.owner.username eq loggedInUserName or event.eventMembers.contains(loggedInUser)}">
             <td th:text="${event.id}"></td>
             <td>
                 <th:block th:if="${event.eventBalance != null and event.eventBalance.compareTo(0) < 0}">
@@ -99,6 +100,11 @@
                                 Participants
                             </a>
                         </span>
+                    </a>
+                </th:block>
+                <th:block th:if="${event.owner.username eq loggedInUserName}">
+                    <a th:href="@{/events/{eventId}/edit(eventId=${event.id})}" class="btn btn-info btn-sm">
+                        Update
                     </a>
                 </th:block>
             </td>

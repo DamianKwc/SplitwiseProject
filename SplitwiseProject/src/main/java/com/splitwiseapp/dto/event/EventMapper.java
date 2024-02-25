@@ -18,7 +18,6 @@ public class EventMapper {
                 .eventName(getEventName(eventDto))
                 .creationDate(LocalDate.now())
                 .owner(userService.getCurrentlyLoggedInUser())
-                .creationDate(LocalDate.now())
                 .build();
     }
 

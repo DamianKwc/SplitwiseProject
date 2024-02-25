@@ -54,6 +54,9 @@
                 </a>
                 <br>
                 <br>
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <p th:text="${errorMessage}"></p>
+                </div>
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
                     <tr>
@@ -143,13 +146,12 @@
                                                     <td th:text="${singleParticipant.firstName}"></td>
                                                     <td th:text="${singleParticipant.username}"></td>
                                                     <td>
-                                                        <form th:action="@{'/events/' + ${eventId} + '/expenses/' + ${expense.id} + '/users/' + ${singleParticipant.id}}">
+                                                        <form id="paidOffForm" th:action="@{'/events/' + ${eventId} + '/expenses/' + ${expense.id} + '/users/' + ${singleParticipant.id}}">
                                                             <label for="paidOffAmount">
                                                                 Enter how much you've already paid off
                                                             </label>
-                                                            <input type="text" id="paidOffAmount"
-                                                                   th:name="paidOffAmount"/>
-                                                            <input type="submit" value="Add"/>
+                                                            <input type="text" id="paidOffAmount" th:name="paidOffAmount"/>
+                                                            <button type="submit">Add</button>
                                                         </form>
                                                     </td>
                                                 </tr>
