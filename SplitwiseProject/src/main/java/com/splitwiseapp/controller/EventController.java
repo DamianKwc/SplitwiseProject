@@ -210,8 +210,9 @@ public class EventController {
         event.setEventBalance(updatedBalance);
         eventService.save(event);
 
-        System.out.println(eventExpenses);
-        System.out.println(updatedBalance);
+        if (errorMessage != null) {
+            model.addAttribute("errorMessage", errorMessage);
+        }
 
         if (errorMessage != null) {
             model.addAttribute("errorMessage", errorMessage);
@@ -226,7 +227,6 @@ public class EventController {
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
-
         return "expenses";
     }
 
@@ -288,7 +288,7 @@ public class EventController {
 
     private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
         return eventExpenses.stream()
-                .flatMap(expense -> expense.getBalancePerUser().values().stream())
+                .map(Expense::getExpenseBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
