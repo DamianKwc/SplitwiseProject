@@ -2,6 +2,8 @@ package com.splitwiseapp.service.users;
 
 import com.splitwiseapp.dto.expense.CustomExpenseDto;
 import com.splitwiseapp.dto.expense.SplitExpenseDto;
+import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.entity.UsernameComparator;
 import com.splitwiseapp.repository.UserRepository;
@@ -10,15 +12,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
 
     @Override
@@ -49,6 +49,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Map<Event, BigDecimal> balanceInEachEvent(User user, List<Event> events, Set<Expense> expenses) {
+        Map<Event, BigDecimal> balanceMap = new HashMap<>();
+
+        for (Event event : events) {
+            BigDecimal userBalanceInEvent = expenses.stream()
+                    .filter(expense -> expense.getEvent().equals(event))
+                    .filter(expense -> expense.getParticipants().contains(user))
+                    .map(expense -> {
+                        BigDecimal userAmount = expense.getCostPerUser().getOrDefault(user.getId(), BigDecimal.ZERO);
+                        BigDecimal userPayoff = expense.getPayoffPerUser().getOrDefault(user.getId(), BigDecimal.ZERO);
+                        return userAmount.subtract(userPayoff);
+                    })
+                    .reduce(BigDecimal.ZERO, BigDecimal::subtract);
+            balanceMap.put(event, userBalanceInEvent);
+        }
+
+        return balanceMap;
+    }
+
+    @Override
     public List<User> getUsersByNames(SplitExpenseDto splitExpenseDto) {
         TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (splitExpenseDto.getParticipantUsername() != null) {
@@ -71,10 +91,6 @@ public class UserServiceImpl implements UserService {
             participants.addAll(retrievedUsers);
         }
         return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
-    }
-
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
     }
 
 }

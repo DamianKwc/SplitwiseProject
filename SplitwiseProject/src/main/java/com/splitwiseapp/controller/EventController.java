@@ -9,6 +9,7 @@ import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Data
 @Controller
-@AllArgsConstructor
 public class EventController {
-
     private final EventService eventService;
     private final UserService userService;
     private final ExpenseService expenseService;
@@ -32,31 +32,26 @@ public class EventController {
     @GetMapping("/events")
     public String events(@RequestParam(name = "eventName", required = false) String eventName,
                          Model model) {
+        User loggedInUser = userService.getCurrentlyLoggedInUser();
 
-        List<Event> events;
-
-        if (eventName != null && !eventName.isEmpty()) {
-            events = eventService.findEventsByName(eventName);
-        } else {
-            events = eventService.findAllEvents();
-        }
+        List<Event> events = eventService.findEventsByUser(loggedInUser);
 
         model.addAttribute("events", events);
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
         return "events";
     }
 
     @GetMapping("/events/{eventId}")
-    public String eventDetails(@PathVariable("eventId") Integer eventId, Model model) {
+    public String eventDetails(@PathVariable("eventId") Integer eventId,
+                               Model model) {
         Event event = eventService.findById(eventId);
         model.addAttribute("event", event);
         return "event";
     }
 
-
     @GetMapping("/newEvent")
     public String showEventAddingForm(Model model) {
-        List<User> allUsers = userService.findAllUsers();
+        List<User> allUsers = userService.findAll();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
         model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
@@ -67,16 +62,19 @@ public class EventController {
     public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
                               Model model,
                               BindingResult result) {
-        Event existingEvent = eventService.findByEventName(eventDto.getEventName());
+        User user = userService.getCurrentlyLoggedInUser();
+        model.addAttribute("loggedInUserName", user.getUsername());
 
-        if (doesEventAlreadyExist(existingEvent)) {
+        Event existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
+
+        if (existingEvent != null) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event '" + existingEvent.getEventName() + "' already exists."));
+                    "You already have an event with the name '" + existingEvent.getEventName() + "'. Please choose a different name."));
         }
 
         if (eventDto.getEventName().isBlank()) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "Event name field cannot be empty."));
+                    "Event name field cannot be blank."));
         }
 
         if (result.hasErrors()) {
@@ -89,7 +87,8 @@ public class EventController {
     }
 
     @GetMapping("/delete")
-    public String deleteEvent(@RequestParam("eventId") Integer eventId, Model model) {
+    public String deleteEvent(@RequestParam("eventId") Integer eventId,
+                              Model model) {
         Event event = eventService.findById(eventId);
         User user = userService.getCurrentlyLoggedInUser();
 
@@ -107,7 +106,8 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}/users")
-    public String showEventUsers(@PathVariable("eventId") Integer eventId, Model model) {
+    public String showEventUsers(@PathVariable("eventId") Integer eventId,
+                                 Model model) {
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
@@ -179,7 +179,8 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}/addUser")
-    public String addUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
+    public String addUser(@PathVariable("eventId") Integer eventId,
+                          @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
         event.addEventMember(user);
@@ -190,7 +191,8 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}/removeUser")
-    public String removeUser(@PathVariable("eventId") Integer eventId, @RequestParam("userId") Integer userId) {
+    public String removeUser(@PathVariable("eventId") Integer eventId,
+                             @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
         event.removeEventMember(user);
@@ -202,8 +204,8 @@ public class EventController {
 
     @GetMapping("/events/{eventId}/setAsEventOwner/{userId}")
     public String setAsEventOwner(@PathVariable("eventId") Integer eventId,
-                                @PathVariable("userId") Integer userId,
-                                Model model) {
+                                  @PathVariable("userId") Integer userId,
+                                  Model model) {
         Event event = eventService.findById(eventId);
         User user = userService.findById(userId);
         event.setOwner(user);
@@ -212,36 +214,9 @@ public class EventController {
         return "redirect:/events";
     }
 
-    @GetMapping("/events/{eventId}/addExpense")
-    public String addExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
-        Event event = eventService.findById(eventId);
-        Expense expense = expenseService.findById(expenseId);
-        event.addExpense(expense);
-        eventService.save(event);
-        expense.addEvent(event);
-        expenseService.save(expense);
-        return "redirect:/events/" + eventId + "/expenses";
-    }
-
-    @GetMapping("/events/{eventId}/removeExpense")
-    public String removeExpense(@PathVariable("eventId") Integer eventId, @RequestParam("expenseId") Integer expenseId) {
-        Event event = eventService.findById(eventId);
-        Expense expense = expenseService.findById(expenseId);
-        event.removeExpense(expense);
-        eventService.save(event);
-        expense.removeEvent();
-        expenseService.save(expense);
-        return "redirect:/events/" + eventId + "/expenses";
-    }
-
     private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
         return eventExpenses.stream()
-                .map(Expense::getExpenseBalance)
+                .flatMap(expense -> expense.getBalancePerUser().values().stream())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    private boolean doesEventAlreadyExist(Event existingEvent) {
-        return existingEvent != null && !existingEvent.getEventName().isBlank();
-    }
-
 }

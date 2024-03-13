@@ -13,6 +13,7 @@ import java.util.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Entity
 @Table( name = "expenses")
 public class Expense {
@@ -76,34 +77,7 @@ public class Expense {
     )
     private List<User> participants = new LinkedList<>();
 
-    @OneToMany(mappedBy = "expensePaid", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
+    @OneToMany(mappedBy = "expensePaid", fetch = FetchType.LAZY,
+            cascade = {CascadeType.REMOVE})
     private List<Payoff> payoffs;
-
-    public void addEvent(Event event) {
-        setEvent(event);
-    }
-
-    public void removeEvent() {
-        this.event = null;
-    }
-
-    public void addParticipant(User participant) {
-        this.participants.add(participant);
-    }
-
-    public void removeParticipant(User participant) {
-        this.participants.remove(participant);
-    }
-
-    @Override
-    public String toString() {
-        return "Expense{" +
-                "name='" + name + '\'' +
-                ", totalCost=" + totalCost +
-                ", expenseBalance=" + expenseBalance +
-                ", event=" + event.getEventName() +
-                ", participants=" + participants +
-                ", payoffs=" + payoffs +
-                '}';
-    }
 }

@@ -20,19 +20,25 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 
-@Data
-@Service
 @AllArgsConstructor
+@Service
 public class ExpenseServiceImpl implements ExpenseService {
-
     private ExpenseRepository expenseRepository;
-    private EventRepository eventRepository;
-    private UserRepository userRepository;
 
     @Override
     public Expense findById(Integer expenseId) {
         return expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+    }
+
+    @Override
+    public void save(Expense expense) {
+        expenseRepository.save(expense);
+    }
+
+    @Override
+    public void deleteById(Integer expenseId) {
+        expenseRepository.deleteById(expenseId);
     }
 
     @Override
@@ -43,26 +49,10 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public void save(Expense expense) {
-        expenseRepository.save(expense);
-    }
-
-    @Override
-    public List<Expense> saveAll(List<Expense> expenses) {
-        return expenseRepository.saveAll(expenses);
-    }
-
-
-    @Override
     public BigDecimal splitCostEquallyPerParticipants(BigDecimal amount, long participantsNumber) {
         return participantsNumber == 0
                 ? BigDecimal.ZERO
                 : amount.divide(BigDecimal.valueOf(participantsNumber), 2, RoundingMode.CEILING);
-    }
-
-    @Override
-    public void deleteById(Integer expenseId) {
-        expenseRepository.deleteById(expenseId);
     }
 
     @Override
@@ -112,22 +102,13 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     private BigDecimal calculateParticipantBalance(Expense expense, User participant) {
         BigDecimal payoffsSum = sumParticipantPayoffs(expense, participant);
-        BigDecimal totalCost = expense.getTotalCost();
-        BigDecimal participantPayoff = payoffsSum;
+        Map<Integer, BigDecimal> costPerUser = expense.getCostPerUser();
+        BigDecimal participantPayoff = costPerUser.get(participant.getId());
 
-        if (expense.getParticipants().contains(participant)) {
-            participantPayoff = payoffsSum.subtract(expense.getPayoffPerUser().getOrDefault(participant.getId(), BigDecimal.ZERO));
+        if (costPerUser.containsKey(participant.getId()) && !Objects.equals(participantPayoff, BigDecimal.ZERO)) {
+            return payoffsSum.subtract(participantPayoff);
         }
-
-        BigDecimal balance;
-        if (expense.getCostPerUser().containsKey(participant.getId())) {
-            BigDecimal participantCost = expense.getCostPerUser().get(participant.getId());
-            balance = participantPayoff.subtract(participantCost);
-        } else {
-            balance = participantPayoff.subtract(splitCostEquallyPerParticipants(totalCost, expense.getParticipants().size()));
-        }
-
-        return balance;
+        return payoffsSum;
     }
 
     private BigDecimal sumParticipantCosts(Expense expense, User participant) {
@@ -136,5 +117,4 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .map(Map.Entry::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
 }

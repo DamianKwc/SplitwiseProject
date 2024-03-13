@@ -22,10 +22,6 @@ public class EventMapper {
                 .build();
     }
 
-    public EventDto mapToDto(Event event) {
-        return null;
-    }
-
     private static String getEventName(EventDto eventDto) {
         return Character.toUpperCase(eventDto.getEventName().charAt(0)) + eventDto.getEventName().substring(1);
     }

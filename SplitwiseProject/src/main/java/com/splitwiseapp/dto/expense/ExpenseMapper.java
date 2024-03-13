@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @Component
 @AllArgsConstructor
 public class ExpenseMapper {
-
     private final UserService userService;
     private final ExpenseService expenseService;
 
@@ -40,8 +39,6 @@ public class ExpenseMapper {
             userService.save(participant);
         });
 
-        System.out.println(costPerParticipant);
-
         return Expense.builder()
                 .name(splitExpenseDto.getName())
                 .creationDate(LocalDate.now())
@@ -64,7 +61,6 @@ public class ExpenseMapper {
         Map<Integer, BigDecimal> userContribution = customExpenseDto.getUserContribution();
 
         expenseParticipants.forEach(participant -> {
-
             List<String> namesOfExistingExpenses = participant.getExpenses().stream()
                     .map(Expense::getName)
                     .collect(Collectors.toList());
@@ -93,5 +89,4 @@ public class ExpenseMapper {
                 .balancePerUser(new HashMap<>())
                 .build();
     }
-
 }

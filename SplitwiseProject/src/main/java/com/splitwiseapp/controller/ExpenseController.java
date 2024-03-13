@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 @Data
 @Controller
 public class ExpenseController {
-
-    private final Pattern costPattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
-
     private final EventService eventService;
     private final EventRepository eventRepository;
     private final UserService userService;
@@ -43,8 +40,11 @@ public class ExpenseController {
     private final PayoffService payoffService;
     private final ExpenseMapper expenseMapper;
 
+    private final Pattern costPattern = Pattern.compile("[0-9]+(\\.[0-9]{1,2})?");
+
     @GetMapping("/events/{eventId}/newSplitExpense")
-    public String showSplitExpenseForm(@PathVariable Integer eventId, Model model) {
+    public String showSplitExpenseForm(@PathVariable Integer eventId,
+                                       Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventMembers = event.getEventMembers();
 
@@ -55,7 +55,8 @@ public class ExpenseController {
     }
 
     @GetMapping("/events/{eventId}/newCustomExpense")
-    public String showCustomExpenseForm(@PathVariable Integer eventId, Model model) {
+    public String showCustomExpenseForm(@PathVariable Integer eventId,
+                                        Model model) {
         Event event = eventService.findById(eventId);
         List<User> eventMembers = event.getEventMembers();
 
@@ -126,6 +127,7 @@ public class ExpenseController {
                                       Model model) {
         Expense foundExpense = expenseService.findById(expenseId);
         User foundUser = userService.findById(userId);
+
         String errorMessage = null;
 
         BigDecimal paidOffFromInput = paidOffAmount == null
@@ -142,7 +144,6 @@ public class ExpenseController {
         if (foundExpense.getTotalCost() != null) {
             foundExpense.setExpenseBalance(foundExpense.getExpenseBalance().add(paidOffFromInput));
         }
-
         foundExpense.getPayoffs().add(payoff);
         foundUser.getPayoffs().add(payoff);
         foundUser.setBalance(userBalance);
@@ -186,8 +187,9 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-
-    private void validateSplitExpense(Integer eventId, SplitExpenseDto splitExpenseDto, BindingResult result) {
+    private void validateSplitExpense(Integer eventId,
+                                      SplitExpenseDto splitExpenseDto,
+                                      BindingResult result) {
         Matcher matcher = costPattern.matcher(splitExpenseDto.getCost());
 
         Optional<Expense> existingExpense =
@@ -209,7 +211,9 @@ public class ExpenseController {
         }
     }
 
-    private void validateCustomExpense(Integer eventId, CustomExpenseDto customExpenseDto, BindingResult result) {
+    private void validateCustomExpense(Integer eventId,
+                                       CustomExpenseDto customExpenseDto,
+                                       BindingResult result) {
         Matcher matcher = costPattern.matcher(customExpenseDto.getCost());
 
         Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
@@ -232,7 +236,9 @@ public class ExpenseController {
         }
     }
 
-    private void saveAttributesToSplitModel(Integer eventId, SplitExpenseDto splitExpenseDto, Model model) {
+    private void saveAttributesToSplitModel(Integer eventId,
+                                            SplitExpenseDto splitExpenseDto,
+                                            Model model) {
         Event foundEvent = eventService.findById(eventId);
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<User> eventMembers = foundEvent.getEventMembers();
@@ -244,7 +250,9 @@ public class ExpenseController {
         model.addAttribute("expenseParticipants", expenseParticipants);
     }
 
-    private void saveAttributesToCustomModel(Integer eventId, CustomExpenseDto customExpenseDto, Model model) {
+    private void saveAttributesToCustomModel(Integer eventId,
+                                             CustomExpenseDto customExpenseDto,
+                                             Model model) {
         Event foundEvent = eventService.findById(eventId);
         User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<User> eventMembers = foundEvent.getEventMembers();
@@ -255,27 +263,4 @@ public class ExpenseController {
         model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("expenseParticipants", expenseParticipants);
     }
-
-    @GetMapping("/expenses/{expenseId}/addUser")
-    public String addUser(@PathVariable("expenseId") Integer expenseId, @RequestParam("userId") Integer userId) {
-        Expense expense = expenseService.findById(expenseId);
-        User user = userService.findById(userId);
-        expense.addParticipant(user);
-        expenseService.save(expense);
-        user.addExpense(expense);
-        userService.save(user);
-        return "redirect:/expenses/" + expenseId + "/users";
-    }
-
-    @GetMapping("/expenses/{expenseId}/removeUser")
-    public String removeUser(@PathVariable("expenseId") Integer expenseId, @RequestParam("userId") Integer userId) {
-        Expense expense = expenseService.findById(expenseId);
-        User user = userService.findById(userId);
-        expense.removeParticipant(user);
-        expenseService.save(expense);
-        user.removeExpense(expense);
-        userService.save(user);
-        return "redirect:/expenses/" + expenseId + "/users";
-    }
-
 }

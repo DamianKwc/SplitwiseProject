@@ -10,13 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "users")
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
+@Entity
+@Table(name = "users")
 public class User {
 
     @Id
@@ -37,8 +38,7 @@ public class User {
     @Column(name = "balance")
     private BigDecimal balance;
 
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -61,28 +61,6 @@ public class User {
     public void removeEvent(Event event) {
         this.userEvents.remove(event);
     }
-
-    public void addExpense(Expense expense) {
-        this.expenses.add(expense);
-    }
-
-    public void removeExpense(Expense expense) {
-        this.expenses.remove(expense);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "firstName='" + firstName + '\'' +
-                ", username='" + username + '\'' +
-                ", balance=" + balance +
-                ", roles=" + roles.size() +
-                ", userEvents=" + userEvents.size() +
-                ", expenses=" + expenses.size() +
-                ", payoffs=" + payoffs.size() +
-                '}';
-    }
-
 }
 
 

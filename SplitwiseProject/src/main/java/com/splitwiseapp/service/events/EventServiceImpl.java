@@ -1,16 +1,16 @@
 package com.splitwiseapp.service.events;
 
 import com.splitwiseapp.entity.Event;
+import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.EventRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 @AllArgsConstructor
+@Service
 public class EventServiceImpl implements EventService {
-
     private final EventRepository eventRepository;
 
     @Override
@@ -29,13 +29,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event findByEventName(String eventName) {
-        return eventRepository.findByEventName(eventName);
-    }
-
-    @Override
-    public List<Event> findEventsByName(String eventName) {
-        return eventRepository.findByEventNameContainingIgnoreCase(eventName);
+    public Event findByEventNameAndOwner(String eventName, User owner) {
+        return eventRepository.findByEventNameAndOwner(eventName, owner);
     }
 
     @Override
@@ -43,5 +38,8 @@ public class EventServiceImpl implements EventService {
         eventRepository.deleteById(eventId);
     }
 
-
+    @Override
+    public List<Event> findEventsByUser(User user) {
+        return eventRepository.findEventsByOwnerOrEventMembers(user, user);
+    }
 }
