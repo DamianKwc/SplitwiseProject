@@ -83,17 +83,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUsersByNames(CustomExpenseDto customExpenseDto) {
+        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (customExpenseDto.getParticipantsNames() != null) {
-            return customExpenseDto.getParticipantsNames()
-                    .stream()
+            Set<User> retrievedUsers = customExpenseDto.getParticipantsNames().stream()
                     .map(this::findByUsername)
-                    .distinct()
-                    .sorted(new UsernameComparator())
-
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
+            participants.addAll(retrievedUsers);
         }
-        return Collections.emptyList();
+        return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
     }
-
 
 }

@@ -15,11 +15,6 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     @Override
-    public List<Event> findAllEvents() {
-        return eventRepository.findAll();
-    }
-
-    @Override
     public void save(Event event) {
         eventRepository.save(event);
     }

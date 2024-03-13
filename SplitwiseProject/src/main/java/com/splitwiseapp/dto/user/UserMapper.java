@@ -20,9 +20,9 @@ public class UserMapper {
     private final RoleRepository roleRepository;
 
     public User mapToDomain(UserDto userDto) {
-        Role role = roleRepository.findByRole("ROLE_ADMIN");
+        Role role = roleRepository.findByRole("ROLE_USER");
         if (role == null) {
-            role = checkRoleExist();
+            role = addDefaultRole();
         }
 
         return User.builder()
@@ -38,9 +38,9 @@ public class UserMapper {
         return null;
     }
 
-    private Role checkRoleExist() {
+    private Role addDefaultRole() {
         Role role = new Role();
-        role.setRole("ROLE_ADMIN");
+        role.setRole("ROLE_USER");
         return roleRepository.save(role);
     }
 

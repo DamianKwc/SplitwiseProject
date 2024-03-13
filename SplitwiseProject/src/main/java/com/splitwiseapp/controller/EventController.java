@@ -100,7 +100,7 @@ public class EventController {
             eventService.deleteById(eventId);
         }
 
-        List<Event> events = eventService.findAllEvents();
+        List<Event> events = user.getUserEvents();
         model.addAttribute("events", events);
         model.addAttribute("loggedInUserName", user.getUsername());
         return "events";

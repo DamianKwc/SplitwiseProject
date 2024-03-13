@@ -1,5 +1,6 @@
 package com.splitwiseapp.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,48 +15,39 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-        @Autowired
-        private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-        public SecurityConfig(UserDetailsService userDetailsService) {
-            this.userDetailsService = userDetailsService;
-        }
+    @Bean
+    public static PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public static PasswordEncoder passwordEncoder(){
-            return new BCryptPasswordEncoder();
-        }
-
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            http
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .requestMatchers("/register/**","/").permitAll()
                                 .anyRequest().authenticated()
-                ).formLogin(
-                        form -> form
-                                .loginPage("/login")
-                                .defaultSuccessUrl("/profile")
-                                .permitAll()
+                ).formLogin(login -> login.loginPage("/login")
+                        .defaultSuccessUrl("/profile")
+                        .permitAll()
                 ).logout(
                         logout -> logout
                                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                                 .permitAll()
-                        );
-            return http.build();
-        }
+                );
+        return http.build();
+    }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
     }
-
-
 }
 
 

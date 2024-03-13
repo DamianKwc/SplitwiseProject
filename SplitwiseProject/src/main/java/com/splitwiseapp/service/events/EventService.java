@@ -12,7 +12,6 @@ import java.util.Optional;
 public interface EventService {
     void save(Event event);
     void deleteById(Integer eventId);
-    List<Event> findAllEvents();
     Event findById(@NotEmpty Integer eventId);
     Optional<Event> findByEventNameAndOwner(String eventName, User owner);
     List<Event> findEventsByUser(User user);
