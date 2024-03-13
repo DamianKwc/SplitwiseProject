@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @Controller
@@ -65,11 +66,11 @@ public class EventController {
         User user = userService.getCurrentlyLoggedInUser();
         model.addAttribute("loggedInUserName", user.getUsername());
 
-        Event existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
+        Optional<Event> existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
 
-        if (existingEvent != null) {
+        if (existingEvent.isPresent()) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "You already have an event with the name '" + existingEvent.getEventName() + "'. Please choose a different name."));
+                    "You already have an event with the name '" + existingEvent.stream() + "'. Please choose a different name."));
         }
 
         if (eventDto.getEventName().isBlank()) {

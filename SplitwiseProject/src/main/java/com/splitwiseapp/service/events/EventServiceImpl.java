@@ -30,10 +30,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event findByEventNameAndOwner(String eventName, User owner) {
-        return eventRepository.findByEventNameAndOwner(eventName, owner);
+    public Optional<Event> findByEventNameAndOwner(String eventName, User owner) {
+        return Optional.ofNullable(eventRepository.findByEventNameAndOwner(eventName, owner));
     }
-
     @Override
     public void deleteById(Integer eventId) {
         eventRepository.deleteById(eventId);

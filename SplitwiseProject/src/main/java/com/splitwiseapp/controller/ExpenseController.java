@@ -164,7 +164,7 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
+    @DeleteMapping("/events/{eventId}/expenses/{expenseId}/delete")
     public String deleteExpense(@PathVariable Integer eventId,
                                 @PathVariable Integer expenseId,
                                 Model model) {
