@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -26,6 +27,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event findById(Integer eventId) {
         return eventRepository.findById(eventId).orElseThrow();
+    }
+
+    @Override
+    public Event findByEventNameAndOwner(String eventName, User owner) {
+        return eventRepository.findByEventNameAndOwner(eventName, owner);
     }
 
     @Override

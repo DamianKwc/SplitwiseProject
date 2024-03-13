@@ -33,7 +33,7 @@ public class SecurityConfig {
             http
                 .authorizeHttpRequests((authorize) ->
                         authorize
-                                .requestMatchers("/register/**").permitAll()
+                                .requestMatchers("/register/**","/").permitAll()
                                 .anyRequest().authenticated()
                 ).formLogin(
                         form -> form
