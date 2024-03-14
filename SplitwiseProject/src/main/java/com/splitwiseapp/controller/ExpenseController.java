@@ -7,6 +7,7 @@ import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.Payoff;
 import com.splitwiseapp.entity.User;
+import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.repository.EventRepository;
 import com.splitwiseapp.repository.ExpenseRepository;
 import com.splitwiseapp.repository.UserRepository;
@@ -15,6 +16,8 @@ import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.payoffs.PayoffService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.Data;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -56,25 +59,27 @@ public class ExpenseController {
 
     @GetMapping("/events/{eventId}/newCustomExpense")
     public String showCustomExpenseForm(@PathVariable Integer eventId,
-                                        Model model) {
+                                        Model model,
+                                        @AuthenticationPrincipal UserDetails userDetails) {
         Event event = eventService.findById(eventId);
         List<User> eventMembers = event.getEventMembers();
 
         model.addAttribute("event", event);
         model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("newCustomExpense", new CustomExpenseDto());
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", userDetails.getUsername());
         return "new-custom-expense";
     }
 
     @PostMapping("/events/{eventId}/saveSplitExpense")
-    public String createSplitExpense(@ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
+    public String createSplitExpense(@AuthenticationPrincipal UserDetails userDetails,
+                                     @ModelAttribute("newSplitExpense") SplitExpenseDto splitExpenseDto,
                                      @PathVariable Integer eventId,
                                      BindingResult result,
                                      Model model) {
         Event foundEvent = eventService.findById(eventId);
         validateSplitExpense(eventId, splitExpenseDto, result);
-        saveAttributesToSplitModel(eventId, splitExpenseDto, model);
+        saveAttributesToSplitModel(userDetails, eventId, splitExpenseDto, model);
 
         if (result.hasErrors()) {
             return "new-split-expense";
@@ -86,15 +91,18 @@ public class ExpenseController {
     }
 
     @PostMapping("/events/{eventId}/saveCustomExpense")
-    public String createCustomExpense(@ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
+    public String createCustomExpense(@AuthenticationPrincipal UserDetails userDetails,
+                                      @ModelAttribute("newCustomExpense") CustomExpenseDto customExpenseDto,
                                       @PathVariable Integer eventId,
                                       BindingResult result,
                                       Model model) {
         Event foundEvent = eventService.findById(eventId);
-        User loggedInUser = userService.getCurrentlyLoggedInUser();
+        User loggedInUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("Currently logged in user not found."));
         List<User> eventMembers = foundEvent.getEventMembers();
         validateCustomExpense(eventId, customExpenseDto, result);
-        saveAttributesToCustomModel(eventId, customExpenseDto, model);
+        saveAttributesToCustomModel(userDetails, eventId, customExpenseDto, model);
+
 
         if (result.hasErrors()) {
             return "new-custom-expense";
@@ -164,8 +172,9 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @DeleteMapping("/events/{eventId}/expenses/{expenseId}/delete")
-    public String deleteExpense(@PathVariable Integer eventId,
+    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
+    public String deleteExpense(@AuthenticationPrincipal UserDetails userDetails,
+                                @PathVariable Integer eventId,
                                 @PathVariable Integer expenseId,
                                 Model model) {
         Event foundEvent = eventService.findById(eventId);
@@ -183,7 +192,7 @@ public class ExpenseController {
 
         foundEvent.removeExpense(foundExpense);
         expenseService.deleteById(expenseId);
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", userDetails.getUsername());
         return "redirect:/events/" + eventId + "/expenses";
     }
 
@@ -192,8 +201,7 @@ public class ExpenseController {
                                       BindingResult result) {
         Matcher matcher = costPattern.matcher(splitExpenseDto.getCost());
 
-        Optional<Expense> existingExpense =
-                Optional.ofNullable(expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId));
+        Optional<Expense> existingExpense = expenseService.findByExpenseNameAndEventId(splitExpenseDto.getName(), eventId);
         existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
                 "Expense '" + expense.getName() + "' already exists.")));
 
@@ -216,7 +224,7 @@ public class ExpenseController {
                                        BindingResult result) {
         Matcher matcher = costPattern.matcher(customExpenseDto.getCost());
 
-        Optional<Expense> existingExpense = Optional.ofNullable(expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId));
+        Optional<Expense> existingExpense = expenseService.findByExpenseNameAndEventId(customExpenseDto.getName(), eventId);
         existingExpense.ifPresent(expense -> result.addError(new FieldError("newExpense", "name",
                 "Expense '" + expense.getName() + "' already exists.")));
 
@@ -236,30 +244,30 @@ public class ExpenseController {
         }
     }
 
-    private void saveAttributesToSplitModel(Integer eventId,
+    private void saveAttributesToSplitModel(@AuthenticationPrincipal UserDetails userDetails,
+                                            Integer eventId,
                                             SplitExpenseDto splitExpenseDto,
                                             Model model) {
         Event foundEvent = eventService.findById(eventId);
-        User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<User> eventMembers = foundEvent.getEventMembers();
         List<User> expenseParticipants = userService.getUsersByNames(splitExpenseDto);
 
         model.addAttribute("event", foundEvent);
-        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+        model.addAttribute("loggedInUserName", userDetails.getUsername());
         model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("expenseParticipants", expenseParticipants);
     }
 
-    private void saveAttributesToCustomModel(Integer eventId,
+    private void saveAttributesToCustomModel(@AuthenticationPrincipal UserDetails userDetails,
+                                             Integer eventId,
                                              CustomExpenseDto customExpenseDto,
                                              Model model) {
         Event foundEvent = eventService.findById(eventId);
-        User loggedInUser = userService.getCurrentlyLoggedInUser();
         List<User> eventMembers = foundEvent.getEventMembers();
         List<User> expenseParticipants = userService.getUsersByNames(customExpenseDto);
 
         model.addAttribute("event", foundEvent);
-        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+        model.addAttribute("loggedInUserName", userDetails.getUsername());
         model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("expenseParticipants", expenseParticipants);
     }

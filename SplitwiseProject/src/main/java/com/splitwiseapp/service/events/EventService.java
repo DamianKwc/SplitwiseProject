@@ -14,6 +14,6 @@ public interface EventService {
     void deleteById(Integer eventId);
     Event findById(@NotEmpty Integer eventId);
     Optional<Event> findByEventNameAndOwner(String eventName, User owner);
-    List<Event> findEventsByUser(User user);
+    Optional<List<Event>> findEventsByUser(User user);
 }
 

@@ -3,21 +3,17 @@ package com.splitwiseapp.service.expenses;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.Payoff;
 import com.splitwiseapp.entity.User;
-import com.splitwiseapp.repository.EventRepository;
+import com.splitwiseapp.exception.EventNotFoundException;
+import com.splitwiseapp.exception.ExpenseNotFoundException;
 import com.splitwiseapp.repository.ExpenseRepository;
-import com.splitwiseapp.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
+
 
 
 @AllArgsConstructor
@@ -28,7 +24,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public Expense findById(Integer expenseId) {
         return expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with ID: " + expenseId));
     }
 
     @Override
@@ -37,15 +33,27 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    public void deleteByEventId(Integer eventId) {
+        expenseRepository.deleteById(eventId);
+    }
+
+    @Override
     public void deleteById(Integer expenseId) {
+        if (!expenseRepository.existsById(expenseId)) {
+            throw new ExpenseNotFoundException("Expense not found with ID: " + expenseId);
+        }
         expenseRepository.deleteById(expenseId);
     }
 
     @Override
     public List<Expense> findExpensesForGivenEvent(Integer eventId) {
-        return expenseRepository.findAll().stream()
-                .filter(expense -> eventId.equals(expense.getEvent().getId()))
-                .collect(Collectors.toList());
+        Optional<List<Expense>> expensesOptional = expenseRepository.findByEventId(eventId);
+        return expensesOptional.orElse(Collections.emptyList());
+    }
+
+    @Override
+    public Optional<Expense> findByExpenseNameAndEventId(String expenseName, Integer eventId) {
+        return expenseRepository.findByNameAndEventId(expenseName, eventId);
     }
 
     @Override
@@ -80,16 +88,6 @@ public class ExpenseServiceImpl implements ExpenseService {
                 calculateParticipantBalance(expense, participant)
         ));
         return mapUserPerBalance;
-    }
-
-    @Override
-    public void deleteByEventId(Integer eventId) {
-        expenseRepository.deleteById(eventId);
-    }
-
-    @Override
-    public Expense findByExpenseNameAndEventId(String expenseName, Integer eventId) {
-        return expenseRepository.findByNameAndEventId(expenseName, eventId);
     }
 
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {

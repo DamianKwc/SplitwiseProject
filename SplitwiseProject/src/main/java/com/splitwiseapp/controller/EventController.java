@@ -5,11 +5,15 @@ import com.splitwiseapp.dto.event.EventMapper;
 import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
+import com.splitwiseapp.exception.EventNotFoundException;
+import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,13 +36,17 @@ public class EventController {
 
     @GetMapping("/events")
     public String events(@RequestParam(name = "eventName", required = false) String eventName,
-                         Model model) {
-        User loggedInUser = userService.getCurrentlyLoggedInUser();
+                         Model model,
+                         @AuthenticationPrincipal UserDetails userDetails) {
+        String loggedInUsername = userDetails.getUsername();
+        User loggedInUser = userService.findByUsername(loggedInUsername)
+                .orElseThrow(() -> new UserNotFoundException("Currently logged in user not found."));
 
-        List<Event> events = eventService.findEventsByUser(loggedInUser);
+        Optional<List<Event>> eventsOptional = eventService.findEventsByUser(loggedInUser);
+        List<Event> events = eventsOptional.orElseThrow(() -> new EventNotFoundException("Events not found for the user"));
 
         model.addAttribute("events", events);
-        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+        model.addAttribute("loggedInUserName", loggedInUsername);
         return "events";
     }
 
@@ -51,26 +59,28 @@ public class EventController {
     }
 
     @GetMapping("/newEvent")
-    public String showEventAddingForm(Model model) {
+    public String showEventAddingForm(Model model,
+                                      @AuthenticationPrincipal UserDetails userDetails) {
         List<User> allUsers = userService.findAll();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", userDetails.getUsername());
         return "new-event";
     }
 
-    @PostMapping("/newEvent")
+    @PostMapping("/newEvent") //TODO: coś się popsuło przez optionala w event repository i można stworzyć event o tej samej nazwie dla jednego usera
     public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
-                              Model model,
-                              BindingResult result) {
-        User user = userService.getCurrentlyLoggedInUser();
-        model.addAttribute("loggedInUserName", user.getUsername());
+                              BindingResult result,
+                              @AuthenticationPrincipal UserDetails userDetails) {
+
+        Optional<User> optionalUser = userService.findByUsername(userDetails.getUsername());
+        User user = optionalUser.orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
 
         Optional<Event> existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
 
         if (existingEvent.isPresent()) {
             result.addError(new FieldError("newEvent", "eventName",
-                    "You already have an event with the name '" + existingEvent.stream() + "'. Please choose a different name."));
+                    "You already have an event with the name '" + eventDto.getEventName() + "'. Please choose a different name."));
         }
 
         if (eventDto.getEventName().isBlank()) {
@@ -82,16 +92,19 @@ public class EventController {
             return "new-event";
         }
 
-        eventService.save(eventMapper.mapToDomain(eventDto));
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        eventService.save(eventMapper.mapToDomain(eventDto, userDetails));
         return "redirect:/events";
     }
 
     @GetMapping("/delete")
     public String deleteEvent(@RequestParam("eventId") Integer eventId,
-                              Model model) {
+                              Model model,
+                              @AuthenticationPrincipal UserDetails userDetails) {
+
+        User user = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+
         Event event = eventService.findById(eventId);
-        User user = userService.getCurrentlyLoggedInUser();
 
         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
             model.addAttribute("deleteError", "You cannot delete an unsettled event.");
@@ -108,7 +121,12 @@ public class EventController {
 
     @GetMapping("/events/{eventId}/users")
     public String showEventUsers(@PathVariable("eventId") Integer eventId,
-                                 Model model) {
+                                 Model model,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+
+        User loggedInUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
@@ -128,20 +146,24 @@ public class EventController {
         model.addAttribute("eventMembers", eventMembers);
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
         return "users";
     }
 
     @GetMapping("/events/{eventId}/expenses")
     public String showEventExpenses(@PathVariable("eventId") Integer eventId,
                                     @RequestParam(value = "errorMessage", required = false) String errorMessage,
-                                    Model model) {
+                                    Model model,
+                                    @AuthenticationPrincipal UserDetails userDetails) {
+
+        User loggedInUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
-        User user = userService.getCurrentlyLoggedInUser();
 
         for (Expense expense : eventExpenses) {
             Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
@@ -167,7 +189,7 @@ public class EventController {
             model.addAttribute("errorMessage", errorMessage);
         }
 
-        model.addAttribute("user", user);
+        model.addAttribute("user", loggedInUser);
         model.addAttribute("event", event);
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
@@ -175,7 +197,7 @@ public class EventController {
         model.addAttribute("remainingUsers", remainingUsers);
         model.addAttribute("eventExpenses", eventExpenses);
         model.addAttribute("updatedBalance", updatedBalance);
-        model.addAttribute("loggedInUserName", userService.getCurrentlyLoggedInUser().getUsername());
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
         return "expenses";
     }
 

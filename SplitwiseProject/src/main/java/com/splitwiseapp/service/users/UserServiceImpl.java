@@ -6,10 +6,9 @@ import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.entity.UsernameComparator;
+import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,11 +22,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Integer userId) {
-        return userRepository.findById(userId).orElseThrow();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
     }
 
     @Override
-    public User findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
@@ -39,13 +39,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void save(User user) {
         userRepository.save(user);
-    }
-
-    @Override
-    public User getCurrentlyLoggedInUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        return userRepository.findByUsername(username);
     }
 
     @Override
@@ -70,27 +63,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUsersByNames(SplitExpenseDto splitExpenseDto) {
-        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (splitExpenseDto.getParticipantUsername() != null) {
-            String[] splitUsernames = splitExpenseDto.getParticipantUsername().split("[,]", 0);
-            for (String username : splitUsernames) {
-                User foundUser = this.findByUsername(username);
-                participants.add(foundUser);
-            }
+            return Arrays.stream(splitExpenseDto.getParticipantUsername().split(","))
+                    .map(this::findByUsername)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .sorted(new UsernameComparator())
+                    .collect(Collectors.toList());
         }
-        return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
+        return Collections.emptyList();
     }
 
     @Override
     public List<User> getUsersByNames(CustomExpenseDto customExpenseDto) {
-        TreeSet<User> participants = new TreeSet<User>(new UsernameComparator());
         if (customExpenseDto.getParticipantsNames() != null) {
-            Set<User> retrievedUsers = customExpenseDto.getParticipantsNames().stream()
+            return customExpenseDto.getParticipantsNames()
+                    .stream()
                     .map(this::findByUsername)
-                    .collect(Collectors.toSet());
-            participants.addAll(retrievedUsers);
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .distinct()
+                    .sorted(new UsernameComparator())
+                    .collect(Collectors.toList());
         }
-        return participants.stream().sorted(new UsernameComparator()).collect(Collectors.toList());
+        return Collections.emptyList();
     }
-
 }

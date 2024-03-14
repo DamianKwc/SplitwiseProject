@@ -15,7 +15,6 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 public class UserMapper {
-
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
@@ -32,10 +31,6 @@ public class UserMapper {
                 .balance(BigDecimal.ZERO)
                 .roles(List.of(role))
                 .build();
-    }
-
-    public static SplitExpenseDto mapToDto(Expense expense) {
-        return null;
     }
 
     private Role addDefaultRole() {
