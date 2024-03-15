@@ -103,7 +103,6 @@ public class ExpenseController {
         validateCustomExpense(eventId, customExpenseDto, result);
         saveAttributesToCustomModel(userDetails, eventId, customExpenseDto, model);
 
-
         if (result.hasErrors()) {
             return "new-custom-expense";
         }
@@ -127,7 +126,7 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @GetMapping("/events/{eventId}/expenses/{expenseId}/users/{userId}")
+    @PostMapping("/events/{eventId}/expenses/{expenseId}/users/{userId}")
     public String assignPaidOffAmount(@PathVariable("eventId") Integer eventId,
                                       @PathVariable("expenseId") Integer expenseId,
                                       @PathVariable("userId") Integer userId,
@@ -172,7 +171,7 @@ public class ExpenseController {
         return "redirect:/events/" + eventId + "/expenses";
     }
 
-    @GetMapping("/events/{eventId}/expenses/{expenseId}/delete")
+    @DeleteMapping("/events/{eventId}/expenses/{expenseId}/delete")
     public String deleteExpense(@AuthenticationPrincipal UserDetails userDetails,
                                 @PathVariable Integer eventId,
                                 @PathVariable Integer expenseId,

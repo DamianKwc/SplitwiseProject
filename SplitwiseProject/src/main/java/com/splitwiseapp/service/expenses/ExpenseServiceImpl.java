@@ -3,11 +3,9 @@ package com.splitwiseapp.service.expenses;
 import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.Payoff;
 import com.splitwiseapp.entity.User;
-import com.splitwiseapp.exception.EventNotFoundException;
 import com.splitwiseapp.exception.ExpenseNotFoundException;
 import com.splitwiseapp.repository.ExpenseRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

@@ -96,7 +96,7 @@ public class EventController {
         return "redirect:/events";
     }
 
-    @GetMapping("/delete")
+    @DeleteMapping("/deleteEvent")
     public String deleteEvent(@RequestParam("eventId") Integer eventId,
                               Model model,
                               @AuthenticationPrincipal UserDetails userDetails) {
@@ -116,7 +116,7 @@ public class EventController {
         List<Event> events = user.getUserEvents();
         model.addAttribute("events", events);
         model.addAttribute("loggedInUserName", user.getUsername());
-        return "events";
+        return "redirect:/events";
     }
 
     @GetMapping("/events/{eventId}/users")
@@ -201,7 +201,7 @@ public class EventController {
         return "expenses";
     }
 
-    @GetMapping("/events/{eventId}/addUser")
+    @PostMapping("/events/{eventId}/addUser")
     public String addUser(@PathVariable("eventId") Integer eventId,
                           @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
@@ -213,7 +213,7 @@ public class EventController {
         return "redirect:/events/" + eventId + "/users";
     }
 
-    @GetMapping("/events/{eventId}/removeUser")
+    @DeleteMapping("/events/{eventId}/removeUser")
     public String removeUser(@PathVariable("eventId") Integer eventId,
                              @RequestParam("userId") Integer userId) {
         Event event = eventService.findById(eventId);
@@ -225,7 +225,7 @@ public class EventController {
         return "redirect:/events/" + eventId + "/users";
     }
 
-    @GetMapping("/events/{eventId}/setAsEventOwner/{userId}")
+    @PostMapping("/events/{eventId}/setAsEventOwner/{userId}")
     public String setAsEventOwner(@PathVariable("eventId") Integer eventId,
                                   @PathVariable("userId") Integer userId,
                                   Model model) {
