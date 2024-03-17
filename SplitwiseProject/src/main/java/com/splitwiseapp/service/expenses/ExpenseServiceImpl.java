@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 
 @AllArgsConstructor
@@ -63,29 +63,29 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public Map<Integer, BigDecimal> mapUserToCost(Expense expense) {
-        Map<Integer, BigDecimal> mapUserPerCost = new HashMap<>();
-        expense.getParticipants().forEach(participant -> mapUserPerCost.put(participant.getId(),
-                sumParticipantCosts(expense, participant)
-        ));
-        return mapUserPerCost;
+        return expense.getParticipants().stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        participant -> sumParticipantCosts(expense, participant)
+                ));
     }
 
     @Override
     public Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense) {
-        Map<Integer, BigDecimal> mapUserPerPayoffsAmount = new HashMap<>();
-        expense.getParticipants().forEach(participant -> mapUserPerPayoffsAmount.put(participant.getId(),
-                sumParticipantPayoffs(expense, participant)
-        ));
-        return mapUserPerPayoffsAmount;
+        return expense.getParticipants().stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        participant -> sumParticipantPayoffs(expense, participant)
+                ));
     }
 
     @Override
     public Map<Integer, BigDecimal> mapUserToBalance(Expense expense) {
-        Map<Integer, BigDecimal> mapUserPerBalance = new HashMap<>();
-        expense.getParticipants().forEach(participant -> mapUserPerBalance.put(participant.getId(),
-                calculateParticipantBalance(expense, participant)
-        ));
-        return mapUserPerBalance;
+        return expense.getParticipants().stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        participant -> calculateParticipantBalance(expense, participant)
+                ));
     }
 
     private BigDecimal sumParticipantPayoffs(Expense expense, User participant) {

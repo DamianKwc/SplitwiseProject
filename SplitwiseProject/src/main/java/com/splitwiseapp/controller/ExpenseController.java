@@ -99,30 +99,18 @@ public class ExpenseController {
         Event foundEvent = eventService.findById(eventId);
         User loggedInUser = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Currently logged in user not found."));
-        List<User> eventMembers = foundEvent.getEventMembers();
-        validateCustomExpense(eventId, customExpenseDto, result);
-        saveAttributesToCustomModel(userDetails, eventId, customExpenseDto, model);
 
+        validateCustomExpense(eventId, customExpenseDto, result);
         if (result.hasErrors()) {
             return "new-custom-expense";
         }
 
-        List<String> namesOfMembers = eventMembers.stream()
-                .map(User::getUsername)
-                .collect(Collectors.toList());
-        customExpenseDto.setParticipantsNames(namesOfMembers);
-        Expense expense = expenseMapper.mapCustomExpenseDtoToDomain(foundEvent, customExpenseDto);
+        saveAttributesToCustomModel(userDetails, eventId, customExpenseDto, model);
 
-        List<Payoff> expensePayoffs = new ArrayList<>();
-        Payoff defaultPayoff = Payoff.builder()
-                .expensePaid(expense)
-                .userPaying(loggedInUser)
-                .payoffAmount(BigDecimal.ZERO)
-                .build();
-        expensePayoffs.add(defaultPayoff);
-        expense.setPayoffs(expensePayoffs);
+        Expense expense = createExpense(foundEvent, loggedInUser, customExpenseDto);
 
         expenseService.save(expense);
+
         return "redirect:/events/" + eventId + "/expenses";
     }
 
@@ -181,18 +169,43 @@ public class ExpenseController {
         Map<Integer, BigDecimal> costPerParticipant = foundExpense.getCostPerUser();
         Map<Integer, BigDecimal> payoffPerParticipant = foundExpense.getPayoffPerUser();
 
-        foundExpense.getParticipants().forEach(participant -> {
-            BigDecimal participantBalanceChange = costPerParticipant.getOrDefault(participant.getId(), BigDecimal.ZERO)
-                    .subtract(payoffPerParticipant.getOrDefault(participant.getId(), BigDecimal.ZERO));
-            participant.setBalance(participant.getBalance().add(participantBalanceChange));
-            participant.getExpenses().removeIf(expense -> expense.getId().equals(expenseId));
-            userService.save(participant);
-        });
+        updateParticipantsAndDeleteExpense(foundExpense, costPerParticipant, payoffPerParticipant);
 
         foundEvent.removeExpense(foundExpense);
         expenseService.deleteById(expenseId);
         model.addAttribute("loggedInUserName", userDetails.getUsername());
         return "redirect:/events/" + eventId + "/expenses";
+    }
+
+    private Expense createExpense(Event foundEvent, User loggedInUser, CustomExpenseDto customExpenseDto) {
+        List<User> eventMembers = foundEvent.getEventMembers();
+        List<String> namesOfMembers = eventMembers.stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+        customExpenseDto.setParticipantsNames(namesOfMembers);
+
+        Expense expense = expenseMapper.mapCustomExpenseDtoToDomain(foundEvent, customExpenseDto);
+
+        List<Payoff> expensePayoffs = new ArrayList<>();
+        Payoff defaultPayoff = Payoff.builder()
+                .expensePaid(expense)
+                .userPaying(loggedInUser)
+                .payoffAmount(BigDecimal.ZERO)
+                .build();
+        expensePayoffs.add(defaultPayoff);
+        expense.setPayoffs(expensePayoffs);
+
+        return expense;
+    }
+
+    private void updateParticipantsAndDeleteExpense(Expense expense, Map<Integer, BigDecimal> costPerParticipant, Map<Integer, BigDecimal> payoffPerParticipant) {
+        expense.getParticipants().forEach(participant -> {
+            BigDecimal participantBalanceChange = costPerParticipant.getOrDefault(participant.getId(), BigDecimal.ZERO)
+                    .subtract(payoffPerParticipant.getOrDefault(participant.getId(), BigDecimal.ZERO));
+            participant.setBalance(participant.getBalance().add(participantBalanceChange));
+            participant.getExpenses().removeIf(exp -> exp.getId().equals(expense.getId()));
+            userService.save(participant);
+        });
     }
 
     private void validateSplitExpense(Integer eventId,

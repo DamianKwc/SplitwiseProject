@@ -19,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -72,9 +73,9 @@ public class EventController {
     public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
                               BindingResult result,
                               @AuthenticationPrincipal UserDetails userDetails) {
-
         Optional<User> optionalUser = userService.findByUsername(userDetails.getUsername());
-        User user = optionalUser.orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+        User user = optionalUser.orElseThrow(() ->
+                new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
 
         Optional<Event> existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
 
@@ -98,24 +99,19 @@ public class EventController {
 
     @DeleteMapping("/deleteEvent")
     public String deleteEvent(@RequestParam("eventId") Integer eventId,
-                              Model model,
+                              RedirectAttributes redirectAttributes,
                               @AuthenticationPrincipal UserDetails userDetails) {
-
         User user = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
-
         Event event = eventService.findById(eventId);
 
         if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
-            model.addAttribute("deleteError", "You cannot delete an unsettled event.");
+            redirectAttributes.addFlashAttribute("deleteError", "You cannot delete an unsettled event.");
         } else if (event.getOwner().equals(user)) {
             expenseService.deleteByEventId(eventId);
             eventService.deleteById(eventId);
         }
 
-        List<Event> events = user.getUserEvents();
-        model.addAttribute("events", events);
-        model.addAttribute("loggedInUserName", user.getUsername());
         return "redirect:/events";
     }
 
@@ -123,30 +119,17 @@ public class EventController {
     public String showEventUsers(@PathVariable("eventId") Integer eventId,
                                  Model model,
                                  @AuthenticationPrincipal UserDetails userDetails) {
-
-        User loggedInUser = userService.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
-
+        User loggedInUser = getLoggedInUser(userDetails);
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
+        populateUserLists(allUsers, eventMembers, remainingUsers);
+
         model.addAttribute("event", event);
-
-        for (User u : allUsers) {
-            if (!eventMembers.contains(u)) {
-                remainingUsers.add(u);
-            }
-        }
-
-        model.addAttribute("add_id", eventId);
-        model.addAttribute("remove_id", eventId);
-        model.addAttribute("eventMembers", eventMembers);
-        model.addAttribute("remainingUsers", remainingUsers);
-        model.addAttribute("eventExpenses", eventExpenses);
-        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+        saveCommonAttributes(model, eventId, eventMembers, remainingUsers, eventExpenses, loggedInUser);
         return "users";
     }
 
@@ -155,9 +138,7 @@ public class EventController {
                                     @RequestParam(value = "errorMessage", required = false) String errorMessage,
                                     Model model,
                                     @AuthenticationPrincipal UserDetails userDetails) {
-
-        User loggedInUser = userService.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+        User loggedInUser = getLoggedInUser(userDetails);
 
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
@@ -165,22 +146,8 @@ public class EventController {
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
-        for (Expense expense : eventExpenses) {
-            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
-            Map<Integer, BigDecimal> balancePerParticipant = expenseService.mapUserToBalance(expense);
-            Map<Integer, BigDecimal> costPerParticipant = expenseService.mapUserToCost(expense);
-            expense.setCostPerUser(costPerParticipant);
-            expense.setPayoffPerUser(payoffAmountPerParticipant);
-            expense.setBalancePerUser(balancePerParticipant);
-            expenseService.save(expense);
-        }
-
-        for (User u : allUsers) {
-            if (!eventMembers.contains(u)) {
-                remainingUsers.add(u);
-            }
-        }
-
+        updateExpenseAttributes(eventExpenses);
+        populateUserLists(allUsers, eventMembers, remainingUsers);
         BigDecimal updatedBalance = calculateUpdatedBalanceForEvent(eventExpenses);
         event.setEventBalance(updatedBalance);
         eventService.save(event);
@@ -191,13 +158,8 @@ public class EventController {
 
         model.addAttribute("user", loggedInUser);
         model.addAttribute("event", event);
-        model.addAttribute("add_id", eventId);
-        model.addAttribute("remove_id", eventId);
-        model.addAttribute("eventMembers", eventMembers);
-        model.addAttribute("remainingUsers", remainingUsers);
-        model.addAttribute("eventExpenses", eventExpenses);
+        saveCommonAttributes(model, eventId, eventMembers, remainingUsers, eventExpenses, loggedInUser);
         model.addAttribute("updatedBalance", updatedBalance);
-        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
         return "expenses";
     }
 
@@ -241,5 +203,38 @@ public class EventController {
         return eventExpenses.stream()
                 .flatMap(expense -> expense.getBalancePerUser().values().stream())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    private void populateUserLists(List<User> allUsers, List<User> eventMembers, List<User> remainingUsers) {
+        for (User u : allUsers) {
+            if (!eventMembers.contains(u)) {
+                remainingUsers.add(u);
+            }
+        }
+    }
+
+    private User getLoggedInUser(UserDetails userDetails) {
+        return userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+    }
+
+    private void updateExpenseAttributes(List<Expense> eventExpenses) {
+        for (Expense expense : eventExpenses) {
+            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
+            Map<Integer, BigDecimal> balancePerParticipant = expenseService.mapUserToBalance(expense);
+            Map<Integer, BigDecimal> costPerParticipant = expenseService.mapUserToCost(expense);
+            expense.setCostPerUser(costPerParticipant);
+            expense.setPayoffPerUser(payoffAmountPerParticipant);
+            expense.setBalancePerUser(balancePerParticipant);
+            expenseService.save(expense);
+        }
+    }
+
+    private void saveCommonAttributes(Model model, Integer eventId, List<User> eventMembers, List<User> remainingUsers, List<Expense> eventExpenses, User loggedInUser) {
+        model.addAttribute("add_id", eventId);
+        model.addAttribute("remove_id", eventId);
+        model.addAttribute("eventMembers", eventMembers);
+        model.addAttribute("remainingUsers", remainingUsers);
+        model.addAttribute("eventExpenses", eventExpenses);
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
     }
 }

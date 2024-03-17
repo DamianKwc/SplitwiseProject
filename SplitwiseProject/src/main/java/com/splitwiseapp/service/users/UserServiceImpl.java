@@ -42,6 +42,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public BigDecimal totalBalanceForUser(User loggedInUser, Map<Event, BigDecimal> balanceInEachEvent) {
+        return balanceInEachEvent.entrySet().stream()
+                .filter(entry -> entry.getKey().getEventMembers().contains(loggedInUser))
+                .map(Map.Entry::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
     public Map<Event, BigDecimal> balanceInEachEvent(User user, List<Event> events, Set<Expense> expenses) {
         Map<Event, BigDecimal> balanceMap = new HashMap<>();
 

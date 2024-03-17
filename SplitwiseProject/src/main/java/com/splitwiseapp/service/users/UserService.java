@@ -22,4 +22,5 @@ public interface UserService {
     List<User> getUsersByNames(SplitExpenseDto splitExpenseDto);
     List<User> getUsersByNames(CustomExpenseDto customExpenseDto);
     Map<Event, BigDecimal> balanceInEachEvent(User user, List<Event> events, Set<Expense> expenses);
+    BigDecimal totalBalanceForUser(User loggedInUser, Map<Event, BigDecimal> balanceInEachEvent);
 }

@@ -8,7 +8,6 @@ import com.splitwiseapp.entity.User;
 import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.service.users.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -60,18 +59,7 @@ public class UserController {
 
         if (optionalUser.isPresent()) {
             User loggedInUser = optionalUser.get();
-            List<Event> userEvents = loggedInUser.getUserEvents();
-            Set<Expense> expenses = loggedInUser.getExpenses();
-
-            userEvents.removeIf(event -> event.getEventBalance() == null);
-            userEvents.sort(Comparator.comparing(Event::getEventBalance));
-
-            Map<Event, BigDecimal> balanceInEachEvent = userService.balanceInEachEvent(loggedInUser, userEvents, expenses);
-
-            model.addAttribute("userEvents", userEvents);
-            model.addAttribute("balanceInEachEvent", balanceInEachEvent);
-            model.addAttribute("loggedInUserName", loggedInUser.getUsername());
-            model.addAttribute("userBalance", loggedInUser.getBalance());
+            saveAttributesToUserModel(loggedInUser, model);
             return "profile";
         } else {
             throw new UserNotFoundException("Currently logged in user not found.");
@@ -84,5 +72,21 @@ public class UserController {
         }
         Optional<User> optionalUser = userService.findByUsername(userName);
         return optionalUser.isPresent();
+    }
+
+    private void saveAttributesToUserModel(User loggedInUser, Model model) {
+        List<Event> userEvents = loggedInUser.getUserEvents();
+        Set<Expense> expenses = loggedInUser.getExpenses();
+
+        userEvents.removeIf(event -> event.getEventBalance() == null);
+        userEvents.sort(Comparator.comparing(Event::getEventBalance));
+
+        Map<Event, BigDecimal> balanceInEachEvent = userService.balanceInEachEvent(loggedInUser, userEvents, expenses);
+        BigDecimal totalBalanceForUser = userService.totalBalanceForUser(loggedInUser, balanceInEachEvent);
+
+        model.addAttribute("userEvents", userEvents);
+        model.addAttribute("balanceInEachEvent", balanceInEachEvent);
+        model.addAttribute("loggedInUserName", loggedInUser.getUsername());
+        model.addAttribute("userBalance", totalBalanceForUser);
     }
 }
