@@ -15,5 +15,6 @@ public interface EventService {
     Event findById(@NotEmpty Integer eventId);
     Optional<Event> findByEventNameAndOwner(String eventName, User owner);
     Optional<List<Event>> findEventsByUser(User user);
+    void populateUserLists(List<User> allUsers, List<User> eventMembers, List<User> remainingUsers);
 }
 

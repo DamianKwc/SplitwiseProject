@@ -23,4 +23,6 @@ public class CustomExpenseDto {
     private List<String> participantsNames;
 
     private Map<Integer, BigDecimal> userContribution;
+
+
 }

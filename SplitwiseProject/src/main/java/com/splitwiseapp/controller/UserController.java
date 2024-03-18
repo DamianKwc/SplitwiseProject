@@ -9,6 +9,7 @@ import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.service.users.UserService;
 import jakarta.validation.Valid;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.math.BigDecimal;
 import java.util.*;
 
-@Data
+@RequiredArgsConstructor
 @Controller
 public class UserController {
+
     private final UserService userService;
     private final UserMapper userMapper;
 
@@ -37,7 +39,6 @@ public class UserController {
     public String registration(@Valid @ModelAttribute("user") UserDto userDto,
                                BindingResult result,
                                Model model) {
-
         if (doesUserAlreadyExist(userDto.getUsername())) {
             result.rejectValue("username", null,
                     "There is already an account registered with the same username");
@@ -74,7 +75,8 @@ public class UserController {
         return optionalUser.isPresent();
     }
 
-    private void saveAttributesToUserModel(User loggedInUser, Model model) {
+    private void saveAttributesToUserModel(User loggedInUser,
+                                           Model model) {
         List<Event> userEvents = loggedInUser.getUserEvents();
         Set<Expense> expenses = loggedInUser.getExpenses();
 

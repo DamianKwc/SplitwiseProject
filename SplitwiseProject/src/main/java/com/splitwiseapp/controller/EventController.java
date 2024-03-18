@@ -10,8 +10,8 @@ import com.splitwiseapp.exception.UserNotFoundException;
 import com.splitwiseapp.service.events.EventService;
 import com.splitwiseapp.service.expenses.ExpenseService;
 import com.splitwiseapp.service.users.UserService;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -27,18 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Data
+@RequiredArgsConstructor
 @Controller
 public class EventController {
+
     private final EventService eventService;
     private final UserService userService;
     private final ExpenseService expenseService;
     private final EventMapper eventMapper;
 
     @GetMapping("/events")
-    public String events(@RequestParam(name = "eventName", required = false) String eventName,
-                         Model model,
-                         @AuthenticationPrincipal UserDetails userDetails) {
+    public String events(@AuthenticationPrincipal UserDetails userDetails,
+                         Model model) {
         String loggedInUsername = userDetails.getUsername();
         User loggedInUser = userService.findByUsername(loggedInUsername)
                 .orElseThrow(() -> new UserNotFoundException("Currently logged in user not found."));
@@ -60,8 +60,8 @@ public class EventController {
     }
 
     @GetMapping("/newEvent")
-    public String showEventAddingForm(Model model,
-                                      @AuthenticationPrincipal UserDetails userDetails) {
+    public String showEventAddingForm(@AuthenticationPrincipal UserDetails userDetails,
+                                      Model model) {
         List<User> allUsers = userService.findAll();
         model.addAttribute("newEvent", new EventDto());
         model.addAttribute("allUsers", allUsers);
@@ -69,25 +69,16 @@ public class EventController {
         return "new-event";
     }
 
-    @PostMapping("/newEvent") //TODO: coś się popsuło przez optionala w event repository i można stworzyć event o tej samej nazwie dla jednego usera
-    public String createEvent(@ModelAttribute("newEvent") EventDto eventDto,
-                              BindingResult result,
-                              @AuthenticationPrincipal UserDetails userDetails) {
-        Optional<User> optionalUser = userService.findByUsername(userDetails.getUsername());
-        User user = optionalUser.orElseThrow(() ->
-                new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
+    @PostMapping("/newEvent")
+    public String createEvent(@AuthenticationPrincipal UserDetails userDetails,
+                              @ModelAttribute("newEvent") EventDto eventDto,
+                              BindingResult result) {
+        String username = userDetails.getUsername();
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
 
-        Optional<Event> existingEvent = eventService.findByEventNameAndOwner(eventDto.getEventName(), user);
-
-        if (existingEvent.isPresent()) {
-            result.addError(new FieldError("newEvent", "eventName",
-                    "You already have an event with the name '" + eventDto.getEventName() + "'. Please choose a different name."));
-        }
-
-        if (eventDto.getEventName().isBlank()) {
-            result.addError(new FieldError("newEvent", "eventName",
-                    "Event name field cannot be blank."));
-        }
+        validateEventNotExist(eventDto.getEventName(), user, result);
+        validateEventNameNotBlank(eventDto.getEventName(), result);
 
         if (result.hasErrors()) {
             return "new-event";
@@ -97,28 +88,27 @@ public class EventController {
         return "redirect:/events";
     }
 
-    @DeleteMapping("/deleteEvent")
-    public String deleteEvent(@RequestParam("eventId") Integer eventId,
-                              RedirectAttributes redirectAttributes,
-                              @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userService.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
-        Event event = eventService.findById(eventId);
+    @DeleteMapping("/deleteEvent/{eventId}")
+    public String deleteEvent(@AuthenticationPrincipal UserDetails userDetails,
+                              @PathVariable Integer eventId,
+                              RedirectAttributes redirectAttributes) {
+        userService.findByUsername(userDetails.getUsername()).ifPresent(user -> {
+            Event event = eventService.findById(eventId);
 
-        if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
-            redirectAttributes.addFlashAttribute("deleteError", "You cannot delete an unsettled event.");
-        } else if (event.getOwner().equals(user)) {
-            expenseService.deleteByEventId(eventId);
-            eventService.deleteById(eventId);
-        }
-
+            if (event.getEventBalance() != null && event.getEventBalance().compareTo(BigDecimal.ZERO) < 0) {
+                redirectAttributes.addFlashAttribute("deleteError", "You cannot delete an unsettled event.");
+            } else if (event.getOwner().equals(user)) {
+                expenseService.deleteByEventId(eventId);
+                eventService.deleteById(eventId);
+            }
+        });
         return "redirect:/events";
     }
 
     @GetMapping("/events/{eventId}/users")
-    public String showEventUsers(@PathVariable("eventId") Integer eventId,
-                                 Model model,
-                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public String showEventUsers(@AuthenticationPrincipal UserDetails userDetails,
+                                 @PathVariable("eventId") Integer eventId,
+                                 Model model) {
         User loggedInUser = getLoggedInUser(userDetails);
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
@@ -126,7 +116,7 @@ public class EventController {
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
-        populateUserLists(allUsers, eventMembers, remainingUsers);
+        eventService.populateUserLists(allUsers, eventMembers, remainingUsers);
 
         model.addAttribute("event", event);
         saveCommonAttributes(model, eventId, eventMembers, remainingUsers, eventExpenses, loggedInUser);
@@ -134,21 +124,20 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}/expenses")
-    public String showEventExpenses(@PathVariable("eventId") Integer eventId,
+    public String showEventExpenses(@AuthenticationPrincipal UserDetails userDetails,
+                                    @PathVariable("eventId") Integer eventId,
                                     @RequestParam(value = "errorMessage", required = false) String errorMessage,
-                                    Model model,
-                                    @AuthenticationPrincipal UserDetails userDetails) {
+                                    Model model) {
         User loggedInUser = getLoggedInUser(userDetails);
-
         Event event = eventService.findById(eventId);
         List<User> allUsers = userService.findAll();
         List<User> eventMembers = event.getEventMembers();
         List<User> remainingUsers = new ArrayList<>();
         List<Expense> eventExpenses = expenseService.findExpensesForGivenEvent(eventId);
 
-        updateExpenseAttributes(eventExpenses);
-        populateUserLists(allUsers, eventMembers, remainingUsers);
-        BigDecimal updatedBalance = calculateUpdatedBalanceForEvent(eventExpenses);
+        expenseService.updateExpenseAttributes(eventExpenses);
+        eventService.populateUserLists(allUsers, eventMembers, remainingUsers);
+        BigDecimal updatedBalance = expenseService.calculateUpdatedBalanceForEvent(eventExpenses);
         event.setEventBalance(updatedBalance);
         eventService.save(event);
 
@@ -196,19 +185,26 @@ public class EventController {
         event.setOwner(user);
         eventService.save(event);
         model.addAttribute("loggedInUserName", user.getUsername());
+        System.out.println(user.getUsername());
         return "redirect:/events";
     }
 
-    private BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses) {
-        return eventExpenses.stream()
-                .flatMap(expense -> expense.getBalancePerUser().values().stream())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    private void validateEventNotExist(String eventName,
+                                       User user,
+                                       BindingResult result) {
+        Optional<Event> existingEvent = eventService.findByEventNameAndOwner(eventName, user);
+
+        if (existingEvent.isPresent()) {
+            result.addError(new FieldError("newEvent", "eventName",
+                    "You already have an event with the name '" + eventName + "'. Please choose a different name."));
+        }
     }
-    private void populateUserLists(List<User> allUsers, List<User> eventMembers, List<User> remainingUsers) {
-        for (User u : allUsers) {
-            if (!eventMembers.contains(u)) {
-                remainingUsers.add(u);
-            }
+
+    private void validateEventNameNotBlank(String eventName,
+                                           BindingResult result) {
+        if (eventName.isBlank()) {
+            result.addError(new FieldError("newEvent", "eventName",
+                    "Event name field cannot be blank."));
         }
     }
 
@@ -217,19 +213,12 @@ public class EventController {
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + userDetails.getUsername()));
     }
 
-    private void updateExpenseAttributes(List<Expense> eventExpenses) {
-        for (Expense expense : eventExpenses) {
-            Map<Integer, BigDecimal> payoffAmountPerParticipant = expenseService.mapUserToPayoffAmount(expense);
-            Map<Integer, BigDecimal> balancePerParticipant = expenseService.mapUserToBalance(expense);
-            Map<Integer, BigDecimal> costPerParticipant = expenseService.mapUserToCost(expense);
-            expense.setCostPerUser(costPerParticipant);
-            expense.setPayoffPerUser(payoffAmountPerParticipant);
-            expense.setBalancePerUser(balancePerParticipant);
-            expenseService.save(expense);
-        }
-    }
-
-    private void saveCommonAttributes(Model model, Integer eventId, List<User> eventMembers, List<User> remainingUsers, List<Expense> eventExpenses, User loggedInUser) {
+    private void saveCommonAttributes(Model model,
+                                      Integer eventId,
+                                      List<User> eventMembers,
+                                      List<User> remainingUsers,
+                                      List<Expense> eventExpenses,
+                                      User loggedInUser) {
         model.addAttribute("add_id", eventId);
         model.addAttribute("remove_id", eventId);
         model.addAttribute("eventMembers", eventMembers);

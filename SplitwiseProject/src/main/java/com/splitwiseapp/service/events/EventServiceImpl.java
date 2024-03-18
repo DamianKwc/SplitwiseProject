@@ -13,6 +13,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class EventServiceImpl implements EventService {
+
     private final EventRepository eventRepository;
 
     @Override
@@ -39,5 +40,14 @@ public class EventServiceImpl implements EventService {
     @Override
     public Optional<List<Event>> findEventsByUser(User user) {
         return eventRepository.findEventsByOwnerOrEventMembers(user, user);
+    }
+
+    @Override
+    public void populateUserLists(List<User> allUsers, List<User> eventMembers, List<User> remainingUsers) {
+        for (User u : allUsers) {
+            if (!eventMembers.contains(u)) {
+                remainingUsers.add(u);
+            }
+        }
     }
 }

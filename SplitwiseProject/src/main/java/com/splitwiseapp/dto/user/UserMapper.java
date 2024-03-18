@@ -1,7 +1,5 @@
 package com.splitwiseapp.dto.user;
 
-import com.splitwiseapp.dto.expense.SplitExpenseDto;
-import com.splitwiseapp.entity.Expense;
 import com.splitwiseapp.entity.Role;
 import com.splitwiseapp.entity.User;
 import com.splitwiseapp.repository.RoleRepository;
@@ -15,6 +13,7 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 public class UserMapper {
+
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 

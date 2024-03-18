@@ -1,12 +1,11 @@
 package com.splitwiseapp.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@RequiredArgsConstructor
 @Controller
-@AllArgsConstructor
 public class LoginController {
 
     @GetMapping("/login")

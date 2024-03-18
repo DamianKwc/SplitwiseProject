@@ -1,6 +1,10 @@
 package com.splitwiseapp.service.expenses;
 
+import com.splitwiseapp.dto.expense.CustomExpenseDto;
+import com.splitwiseapp.dto.expense.ExpenseMapper;
+import com.splitwiseapp.entity.Event;
 import com.splitwiseapp.entity.Expense;
+import com.splitwiseapp.entity.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,5 +23,9 @@ public interface ExpenseService {
     Map<Integer, BigDecimal> mapUserToCost(Expense expense);
     Map<Integer, BigDecimal> mapUserToPayoffAmount(Expense expense);
     Map<Integer, BigDecimal> mapUserToBalance(Expense expense);
-    Optional<Expense> findByExpenseNameAndEventId(String expenseName, Integer eventId);
+    Expense findByExpenseNameAndEventId(String expenseName, Integer eventId);
+    void updateExpenseAttributes(List<Expense> eventExpenses);
+    BigDecimal calculateUpdatedBalanceForEvent(List<Expense> eventExpenses);
+    Expense createExpense(Event foundEvent, User loggedInUser, CustomExpenseDto customExpenseDto, ExpenseMapper expenseMapper);
+    void updateParticipantsAndDeleteExpense(Expense expense, Map<Integer, BigDecimal> costPerParticipant, Map<Integer, BigDecimal> payoffPerParticipant);
 }
